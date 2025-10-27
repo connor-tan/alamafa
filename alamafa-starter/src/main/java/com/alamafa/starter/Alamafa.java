@@ -39,4 +39,5 @@ public final class Alamafa {
                 .withConfigurations(configurations)
                 .build();
     }
+
 }

@@ -18,14 +18,13 @@ public final class ApplicationBootstrap {
     private static final AlamafaLogger LOGGER = LoggerFactory.getLogger(ApplicationBootstrap.class);
 
     private final ContextAwareApplicationLauncher launcher;
-    private final List<Consumer<ApplicationContext>> contextInitialisers = new ArrayList<>();
+    private final List<Consumer<ApplicationContext>> contextInitializers = new ArrayList<>();
     private final List<Lifecycle> lifecycleParticipants = new ArrayList<>();
     private final LifecycleErrorHandler dispatchingErrorHandler = this::dispatchError;
-    private volatile LifecycleErrorHandler errorHandler = (phase, exception) ->
-            logFailure(phase, exception);
+    private volatile LifecycleErrorHandler errorHandler = this::logFailure;
 
     /**
-     * 使用具备上下文能力的启动器构造引导器，并提前把错误处理器与健康检查注册到上下文中。
+     * 使用具备上下文能力的启动器构造引导器
      */
     public ApplicationBootstrap(ContextAwareApplicationLauncher launcher) {
         this.launcher = Objects.requireNonNull(launcher, "launcher");
@@ -42,7 +41,7 @@ public final class ApplicationBootstrap {
      * 注册上下文初始化器，会在 {@link Lifecycle#init(ApplicationContext)} 之前按顺序执行。
      */
     public ApplicationBootstrap addContextInitializer(Consumer<ApplicationContext> initializer) {
-        contextInitialisers.add(Objects.requireNonNull(initializer, "initializer"));
+        contextInitializers.add(Objects.requireNonNull(initializer, "initializer"));
         return this;
     }
 
@@ -74,8 +73,8 @@ public final class ApplicationBootstrap {
      */
     public void launch(Lifecycle lifecycle) {
         ApplicationContext ctx = launcher.getContext();
-        for (Consumer<ApplicationContext> initialiser : contextInitialisers) {
-            initialiser.accept(ctx);
+        for (Consumer<ApplicationContext> initializer : contextInitializers) {
+            initializer.accept(ctx);
         }
         launcher.launch(composeLifecycle(lifecycle));
     }

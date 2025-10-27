@@ -10,6 +10,12 @@
     <name>alamafa-starter</name>
     <description>Single dependency starter aggregating core, di, config modules</description>
 
+    <properties>
+        <!-- explicit versions to allow isolated module build -->
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <logback.version>1.5.20</logback.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alamafa</groupId>
@@ -26,21 +32,27 @@
             <artifactId>alamafa-di</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Logging backend suggested but optional -->
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- Test dependencies align via BOM -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
