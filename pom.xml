@@ -14,6 +14,8 @@
         <module>alamafa-di</module>
         <module>alamafa-config</module>
         <module>alamafa-starter</module>
+        <module>alamafa-bootstrap</module>
+        <module>alamafa-helloworld</module>
     </modules>
 
     <properties>
