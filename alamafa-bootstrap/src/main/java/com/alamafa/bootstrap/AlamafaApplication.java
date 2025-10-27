@@ -1,11 +1,4 @@
 package com.alamafa.bootstrap;
 
-public class AlamafaApplication {
-
-
-
-
-    public void run(Class<?> primarySource,String[] args) {
-
-    }
-}
+// Placeholder file intentionally left empty; legacy AlamafaApplication class removed.
+// Use @AlamafaBootApplication annotation instead.
