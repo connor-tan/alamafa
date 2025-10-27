@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.alamafa</groupId>
+        <artifactId>alamafa</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>alamafa-starter</artifactId>
+    <name>alamafa-starter</name>
+    <description>Single dependency starter aggregating core, di, config modules</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-di</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Logging backend suggested but optional -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Test dependencies align via BOM -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
