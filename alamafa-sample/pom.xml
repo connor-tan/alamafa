@@ -15,5 +15,6 @@
     <modules>
         <module>sample-greeting-starter</module>
         <module>sample-helloworld</module>
+        <module>sample-jfx-mvvm</module>
     </modules>
 </project>

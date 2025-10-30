@@ -105,7 +105,19 @@ public final class BeanRegistry {
      * 获取或创建单例实例，确保所有别名共享同一对象。
      */
     private Object obtainSingleton(BeanDefinition<?> definition) {
-        return singletonCache.computeIfAbsent(definition, key -> create(cast(key)));
+        Object existing = singletonCache.get(definition);
+        if (existing != null) {
+            return existing;
+        }
+        synchronized (definition) {
+            Object cached = singletonCache.get(definition);
+            if (cached != null) {
+                return cached;
+            }
+            Object created = create(cast(definition));
+            singletonCache.put(definition, created);
+            return created;
+        }
     }
 
     @SuppressWarnings("unchecked")

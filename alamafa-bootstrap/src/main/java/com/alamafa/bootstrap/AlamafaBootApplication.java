@@ -1,5 +1,8 @@
 package com.alamafa.bootstrap;
 
+import com.alamafa.core.ContextAwareApplicationLauncher;
+import com.alamafa.core.DefaultApplicationLauncher;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,4 +19,6 @@ public @interface AlamafaBootApplication {
     Class<?>[] scanBasePackageClasses() default {};
 
     Class<?>[] modules() default {};
+
+    Class<? extends ContextAwareApplicationLauncher> launcher() default DefaultApplicationLauncher.class;
 }

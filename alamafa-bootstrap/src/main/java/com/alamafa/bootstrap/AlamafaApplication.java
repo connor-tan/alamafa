@@ -43,7 +43,7 @@ public final class AlamafaApplication {
             throw new IllegalArgumentException(
                     primarySource.getName() + " must be annotated with @AlamafaBootApplication");
         }
-        ContextAwareApplicationLauncher launcher = new DefaultApplicationLauncher();
+        ContextAwareApplicationLauncher launcher = instantiateLauncher(metadata.launcher());
         ApplicationBootstrap bootstrap = new ApplicationBootstrap(launcher);
         ApplicationContext context = bootstrap.getContext();
 
@@ -91,7 +91,7 @@ public final class AlamafaApplication {
     }
 
     private static void configureModules(Class<?>[] moduleClasses, AlamafaBootstrapContext context) {
-        if (moduleClasses == null || moduleClasses.length == 0) {
+        if (moduleClasses == null) {
             return;
         }
         for (Class<?> moduleClass : moduleClasses) {
@@ -132,13 +132,13 @@ public final class AlamafaApplication {
         Stream<String> classBasedPackages = Arrays.stream(metadata.scanBasePackageClasses())
                 .filter(Objects::nonNull)
                 .map(Class::getPackageName)
-                .filter(pkg -> pkg != null && !pkg.isBlank());
+                .filter(pkg -> !pkg.isBlank());
         LinkedHashSet<String> packages = explicitPackages
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         classBasedPackages.forEach(packages::add);
         if (packages.isEmpty()) {
             String primaryPackage = primarySource.getPackageName();
-            if (primaryPackage != null && !primaryPackage.isBlank()) {
+            if (!primaryPackage.isBlank()) {
                 packages.add(primaryPackage);
             }
         }
@@ -189,6 +189,17 @@ public final class AlamafaApplication {
             throw ex;
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to locate @AlamafaBootApplication class", ex);
+        }
+    }
+
+    private static ContextAwareApplicationLauncher instantiateLauncher(Class<? extends ContextAwareApplicationLauncher> launcherType) {
+        Class<? extends ContextAwareApplicationLauncher> type = launcherType == null
+                ? DefaultApplicationLauncher.class
+                : launcherType;
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("Failed to instantiate launcher " + type.getName(), ex);
         }
     }
 }

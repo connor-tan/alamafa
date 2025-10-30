@@ -16,6 +16,7 @@
         <module>alamafa-bootstrap</module>
         <module>alamafa-logging-starter</module>
         <module>alamafa-sample</module>
+        <module>alamafa-jfx</module>
     </modules>
 
     <properties>

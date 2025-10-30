@@ -59,10 +59,7 @@ public final class ConfigurationBinder {
 
     private static void applyValue(Object target, Field field, String value) {
         Class<?> fieldType = field.getType();
-        Object converted = convert(value, fieldType);
-        if (converted == null) {
-            return;
-        }
+        Object converted = convert(value, fieldType, field);
         Method setter = findSetter(target.getClass(), field);
         try {
             if (setter != null) {
@@ -95,7 +92,7 @@ public final class ConfigurationBinder {
         }
     }
 
-    private static Object convert(String value, Class<?> targetType) {
+    private static Object convert(String value, Class<?> targetType, Field field) {
         if (targetType.equals(String.class)) {
             return value;
         }
@@ -114,7 +111,13 @@ public final class ConfigurationBinder {
         if (targetType.equals(float.class) || targetType.equals(Float.class)) {
             return Float.parseFloat(value);
         }
-        return null;
+        if (targetType.isEnum()) {
+            @SuppressWarnings("unchecked")
+            Class<? extends Enum> enumType = (Class<? extends Enum>) targetType;
+            return Enum.valueOf(enumType, value.trim());
+        }
+        throw new IllegalStateException("Unsupported configuration property type "
+                + targetType.getName() + " for field " + field.getName());
     }
 
     private static String normalizePrefix(String prefix) {

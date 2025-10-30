@@ -7,6 +7,7 @@ import com.alamafa.di.annotation.Component;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,17 +61,48 @@ final class ComponentScanner {
             return Optional.of(new Metadata(component.scope(), component.value(),
                     component.primary(), component.lazy(), Component.class, false));
         }
+        Set<Class<? extends Annotation>> visited = new HashSet<>();
         for (Annotation annotation : type.getAnnotations()) {
-            Component meta = annotation.annotationType().getAnnotation(Component.class);
-            if (meta == null) {
-                continue;
+            Optional<Metadata> metadata = resolveFromAnnotation(annotation, annotation, visited);
+            if (metadata.isPresent()) {
+                return metadata;
             }
-            BeanDefinition.Scope scope = extractScopeOverride(annotation).orElse(meta.scope());
-            boolean primary = extractBooleanAttribute(annotation, "primary").orElse(meta.primary());
-            boolean lazy = extractBooleanAttribute(annotation, "lazy").orElse(meta.lazy());
-            String name = extractValueAttribute(annotation);
-            boolean shared = extractBooleanAttribute(annotation, "shared").orElse(false);
-            return Optional.of(new Metadata(scope, name, primary, lazy, annotation.annotationType(), shared));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Metadata> resolveFromAnnotation(Annotation annotation,
+                                                     Annotation source,
+                                                     Set<Class<? extends Annotation>> visited) {
+        Class<? extends Annotation> annotationType = annotation.annotationType();
+        if (!visited.add(annotationType)) {
+            return Optional.empty();
+        }
+        Component meta = annotationType.getAnnotation(Component.class);
+        if (meta != null) {
+            BeanDefinition.Scope scope = extractScopeOverride(source)
+                    .or(() -> extractScopeOverride(annotation))
+                    .orElse(meta.scope());
+            boolean primary = extractBooleanAttribute(source, "primary")
+                    .or(() -> extractBooleanAttribute(annotation, "primary"))
+                    .orElse(meta.primary());
+            boolean lazy = extractBooleanAttribute(source, "lazy")
+                    .or(() -> extractBooleanAttribute(annotation, "lazy"))
+                    .orElse(meta.lazy());
+            String name = extractValueAttribute(source);
+            if (name == null || name.isBlank()) {
+                name = extractValueAttribute(annotation);
+            }
+            boolean shared = extractBooleanAttribute(source, "shared")
+                    .or(() -> extractBooleanAttribute(annotation, "shared"))
+                    .orElse(false);
+            return Optional.of(new Metadata(scope, name, primary, lazy, annotationType, shared));
+        }
+        for (Annotation metaAnnotation : annotationType.getAnnotations()) {
+            Optional<Metadata> metadata = resolveFromAnnotation(metaAnnotation, source, visited);
+            if (metadata.isPresent()) {
+                return metadata;
+            }
         }
         return Optional.empty();
     }
@@ -107,10 +139,11 @@ final class ComponentScanner {
     private static Optional<Boolean> extractBooleanAttribute(Annotation annotation, String attribute) {
         try {
             Method method = annotation.annotationType().getDeclaredMethod(attribute);
-            if (method.getReturnType().equals(boolean.class)) {
+            Class<?> returnType = method.getReturnType();
+            if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
                 Object result = method.invoke(annotation);
-                if (result instanceof Boolean booleanValue) {
-                    return Optional.of(booleanValue);
+                if (result != null) {
+                    return Optional.of(((Boolean) result).booleanValue());
                 }
             }
         } catch (ReflectiveOperationException ignored) {

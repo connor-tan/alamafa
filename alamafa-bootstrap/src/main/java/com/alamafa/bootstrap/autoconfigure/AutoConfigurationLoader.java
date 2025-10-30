@@ -20,6 +20,7 @@ import java.util.Set;
 public final class AutoConfigurationLoader {
     private static final AlamafaLogger LOGGER = LoggerFactory.getLogger(AutoConfigurationLoader.class);
     private static final String FACTORIES_RESOURCE = "META-INF/alamafa.factories";
+    private static final String CURRENT_KEY = AutoConfiguration.class.getName();
 
     private AutoConfigurationLoader() {
     }
@@ -77,7 +78,7 @@ public final class AutoConfigurationLoader {
             return;
         }
         String key = line.substring(0, idx).trim();
-        if (!key.isEmpty() && !"com.alamafa.bootstrap.AutoConfiguration".equals(key)) {
+        if (!isAcceptedKey(key)) {
             return;
         }
         String value = line.substring(idx + 1).trim();
@@ -90,5 +91,16 @@ public final class AutoConfigurationLoader {
                 result.add(candidate);
             }
         }
+    }
+
+    private static boolean isAcceptedKey(String key) {
+        if (key == null || key.isEmpty()) {
+            return true;
+        }
+        if (CURRENT_KEY.equals(key)) {
+            return true;
+        }
+        LOGGER.debug("Ignoring auto-configuration entry with unsupported key '{}'", key);
+        return false;
     }
 }

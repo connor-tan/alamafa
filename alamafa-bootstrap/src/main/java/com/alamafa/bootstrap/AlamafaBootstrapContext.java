@@ -54,7 +54,7 @@ public final class AlamafaBootstrapContext {
                 && !configurationClass.isAnnotationPresent(AutoConfiguration.class)) {
             throw new IllegalArgumentException("Configuration class "
                     + configurationClass.getName()
-                    + " must be annotated with @Configuration");
+                    + " must be annotated with @Configuration or @AutoConfiguration");
         }
         configurationClasses.add(configurationClass);
     }
