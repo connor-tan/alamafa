@@ -17,5 +17,15 @@
             <artifactId>alamafa-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>sample-greeting-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-logging-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

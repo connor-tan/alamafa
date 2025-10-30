@@ -1,13 +1,11 @@
-package com.alamafa.sample.helloworld.greeting;
+package com.alamafa.sample.greeting;
 
 import com.alamafa.core.logging.AlamafaLogger;
 import com.alamafa.core.logging.LoggerFactory;
-import com.alamafa.di.annotation.Service;
 
 /**
- * 基于日志输出的问候服务，实现所有依赖均通过 Alamafa 容器管理。
+ * 默认的控制台问候实现，通过日志输出欢迎信息。
  */
-@Service
 public class ConsoleGreetingService implements GreetingService {
     private static final AlamafaLogger LOGGER = LoggerFactory.getLogger(ConsoleGreetingService.class);
 

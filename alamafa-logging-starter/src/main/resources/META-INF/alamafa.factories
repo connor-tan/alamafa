@@ -1,0 +1,2 @@
+com.alamafa.bootstrap.AutoConfiguration=\
+  com.alamafa.logging.autoconfigure.LoggingAutoConfiguration

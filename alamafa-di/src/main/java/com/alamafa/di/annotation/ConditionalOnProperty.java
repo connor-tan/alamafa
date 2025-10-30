@@ -11,10 +11,28 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface ConditionalOnProperty {
-    /** 配置 key 名称。 */
-    String name();
-    /** 期望的属性值，留空时仅判断存在。 */
+    /**
+     * 属性名前缀，可选。
+     */
+    String prefix() default "";
+
+    /**
+     * 属性名称列表，与 {@link #name()} 等价写法。
+     */
+    String[] value() default {};
+
+    /**
+     * 属性名称列表（兼容写法）。
+     */
+    String[] name() default {};
+
+    /**
+     * 期望的属性值，留空时仅判断存在与否。
+     */
     String havingValue() default "";
-    /** 属性缺失时是否视为匹配。 */
+
+    /**
+     * 属性缺失时是否视为匹配。
+     */
     boolean matchIfMissing() default false;
 }

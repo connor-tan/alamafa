@@ -1,0 +1,2 @@
+com.alamafa.bootstrap.AutoConfiguration=\
+  com.alamafa.sample.greeting.autoconfigure.GreetingAutoConfiguration

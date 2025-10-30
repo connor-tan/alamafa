@@ -3,6 +3,7 @@ package com.alamafa.bootstrap;
 import com.alamafa.core.ApplicationBootstrap;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.core.Lifecycle;
+import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
 import com.alamafa.di.annotation.Configuration;
 
 import java.util.LinkedHashSet;
@@ -49,7 +50,8 @@ public final class AlamafaBootstrapContext {
         if (configurationClass == null) {
             return;
         }
-        if (!configurationClass.isAnnotationPresent(Configuration.class)) {
+        if (!configurationClass.isAnnotationPresent(Configuration.class)
+                && !configurationClass.isAnnotationPresent(AutoConfiguration.class)) {
             throw new IllegalArgumentException("Configuration class "
                     + configurationClass.getName()
                     + " must be annotated with @Configuration");

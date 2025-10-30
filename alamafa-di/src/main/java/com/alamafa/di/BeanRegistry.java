@@ -4,6 +4,7 @@ import com.alamafa.core.ApplicationContext;
 import com.alamafa.core.logging.AlamafaLogger;
 import com.alamafa.core.logging.LoggerFactory;
 import com.alamafa.di.internal.ConfigurationProcessor;
+import com.alamafa.di.internal.ConfigurationPropertiesBinderPostProcessor;
 
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
@@ -41,6 +42,7 @@ public final class BeanRegistry {
     public BeanRegistry(ApplicationContext context) {
         this.context = Objects.requireNonNull(context, "context");
         this.configurationProcessor = new ConfigurationProcessor(this);
+        postProcessors.add(new ConfigurationPropertiesBinderPostProcessor());
     }
 
     /**

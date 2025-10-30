@@ -1,5 +1,7 @@
 package com.alamafa.bootstrap;
 
+import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
+import com.alamafa.bootstrap.autoconfigure.AutoConfigurationLoader;
 import com.alamafa.core.ApplicationArguments;
 import com.alamafa.core.ApplicationBootstrap;
 import com.alamafa.core.ApplicationContext;
@@ -52,12 +54,15 @@ public final class AlamafaApplication {
         LinkedHashSet<Class<?>> configurationClasses = new LinkedHashSet<>();
         addConfigurationIfPresent(configurationClasses, primarySource);
 
+        ClassLoader classLoader = determineClassLoader(primarySource);
+
         AlamafaBootstrapContext moduleContext = new AlamafaBootstrapContext(
                 bootstrap,
                 context,
                 primarySource,
                 configurationClasses,
                 scanPackages);
+        registerAutoConfigurations(moduleContext, classLoader);
         configureModules(metadata.modules(), moduleContext);
 
         registerDiBootstrap(bootstrap, moduleContext, metadata, primarySource);
@@ -138,6 +143,29 @@ public final class AlamafaApplication {
             }
         }
         return packages;
+    }
+
+    private static void registerAutoConfigurations(AlamafaBootstrapContext context, ClassLoader classLoader) {
+        for (String className : AutoConfigurationLoader.loadAutoConfigurations(classLoader)) {
+            try {
+                Class<?> candidate = Class.forName(className, false, classLoader);
+                if (!candidate.isAnnotationPresent(AutoConfiguration.class)) {
+                    LOGGER.warn("Auto configuration {} is missing @AutoConfiguration", className);
+                    continue;
+                }
+                context.addConfiguration(candidate);
+            } catch (ClassNotFoundException ex) {
+                LOGGER.warn("Auto configuration class {} not found", className, ex);
+            }
+        }
+    }
+
+    private static ClassLoader determineClassLoader(Class<?> primarySource) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader != null) {
+            return loader;
+        }
+        return primarySource.getClassLoader();
     }
 
     private static void addConfigurationIfPresent(LinkedHashSet<Class<?>> configurationClasses,

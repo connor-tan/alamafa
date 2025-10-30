@@ -1,0 +1,2 @@
+# Test auto configuration entries
+com.alamafa.bootstrap.AutoConfiguration= com.alamafa.bootstrap.AlamafaApplicationTest$AutoConfig

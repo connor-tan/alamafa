@@ -1,6 +1,12 @@
 package com.alamafa.core;
 
 
+import com.alamafa.core.events.ApplicationEventPublisher;
+import com.alamafa.core.events.ApplicationStartedEvent;
+import com.alamafa.core.events.ApplicationStartingEvent;
+import com.alamafa.core.events.ApplicationStoppedEvent;
+import com.alamafa.core.events.ApplicationStoppingEvent;
+import com.alamafa.core.events.DefaultApplicationEventPublisher;
 import com.alamafa.core.health.HealthRegistry;
 import com.alamafa.core.logging.AlamafaLogger;
 import com.alamafa.core.logging.LoggerFactory;
@@ -22,6 +28,7 @@ public final class ApplicationBootstrap {
     private final List<Lifecycle> lifecycleParticipants = new ArrayList<>();
     private final LifecycleErrorHandler dispatchingErrorHandler = this::dispatchError;
     private volatile LifecycleErrorHandler errorHandler = this::logFailure;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 使用具备上下文能力的启动器构造引导器
@@ -35,6 +42,12 @@ public final class ApplicationBootstrap {
             context.put(HealthRegistry.class, registry);
             context.put(HealthRegistry.CONTEXT_KEY, registry);
         }
+        ApplicationEventPublisher publisher = context.get(ApplicationEventPublisher.class);
+        if (publisher == null) {
+            publisher = new DefaultApplicationEventPublisher();
+            context.put(ApplicationEventPublisher.class, publisher);
+        }
+        this.eventPublisher = publisher;
     }
 
     /**
@@ -73,6 +86,7 @@ public final class ApplicationBootstrap {
      */
     public void launch(Lifecycle lifecycle) {
         ApplicationContext ctx = launcher.getContext();
+        eventPublisher.publishEvent(new ApplicationStartingEvent(ctx));
         for (Consumer<ApplicationContext> initializer : contextInitializers) {
             initializer.accept(ctx);
         }
@@ -98,10 +112,12 @@ public final class ApplicationBootstrap {
                     invokePhase(LifecyclePhase.START, participant, ctx);
                 }
                 invokePhase(LifecyclePhase.START, primary, ctx);
+                eventPublisher.publishEvent(new ApplicationStartedEvent(ctx));
             }
 
             @Override
             public void stop(ApplicationContext ctx) throws Exception {
+                eventPublisher.publishEvent(new ApplicationStoppingEvent(ctx));
                 Exception firstError = invokeStop(primary, ctx, null);
                 for (int i = lifecycleParticipants.size() - 1; i >= 0; i--) {
                     Lifecycle participant = lifecycleParticipants.get(i);
@@ -114,6 +130,7 @@ public final class ApplicationBootstrap {
                     throw new LifecycleExecutionException(LifecyclePhase.STOP,
                             describeTarget(primary), firstError);
                 }
+                eventPublisher.publishEvent(new ApplicationStoppedEvent(ctx));
             }
         };
     }

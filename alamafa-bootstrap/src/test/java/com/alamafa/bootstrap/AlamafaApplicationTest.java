@@ -1,11 +1,11 @@
 package com.alamafa.bootstrap;
 
+import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
 import com.alamafa.core.ApplicationArguments;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.core.ApplicationShutdown;
 import com.alamafa.core.runner.ApplicationRunner;
 import com.alamafa.di.annotation.Bean;
-import com.alamafa.di.annotation.Configuration;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -29,19 +29,19 @@ class AlamafaApplicationTest {
     }
 
     @AlamafaBootApplication
-    @Configuration
     static class TestApplication {
+    }
+
+    @AutoConfiguration
+    static class AutoConfig {
         @Bean
         ApplicationRunner runner() {
-            return new ApplicationRunner() {
-                @Override
-                public void run(ApplicationContext context, ApplicationArguments arguments) {
-                    EVENTS.add("runner");
-                    assertNotNull(arguments, "application arguments should be registered");
-                    receivedArgs = arguments.asList();
-                    ApplicationShutdown shutdown = context.get(ApplicationShutdown.class);
-                    assertNotNull(shutdown, "shutdown access should be available");
-                }
+            return (context, arguments) -> {
+                EVENTS.add("runner");
+                assertNotNull(arguments, "application arguments should be registered");
+                receivedArgs = arguments.asList();
+                ApplicationShutdown shutdown = context.get(ApplicationShutdown.class);
+                assertNotNull(shutdown, "shutdown access should be available");
             };
         }
     }

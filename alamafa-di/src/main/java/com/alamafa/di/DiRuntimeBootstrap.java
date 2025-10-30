@@ -9,6 +9,8 @@ import com.alamafa.core.ApplicationShutdown;
 import com.alamafa.core.Lifecycle;
 import com.alamafa.core.LifecycleExecutionException;
 import com.alamafa.core.LifecyclePhase;
+import com.alamafa.core.events.ApplicationEventListener;
+import com.alamafa.core.events.ApplicationEventPublisher;
 import com.alamafa.core.logging.AlamafaLogger;
 import com.alamafa.core.logging.LoggerFactory;
 import com.alamafa.core.runner.ApplicationRunner;
@@ -34,6 +36,7 @@ public final class DiRuntimeBootstrap implements Lifecycle {
     private List<ApplicationLifecycle> lifecycleBeans = List.of();
     private List<ApplicationRunner> applicationRunners = List.of();
     private List<CommandLineRunner> commandLineRunners = List.of();
+    private List<ApplicationEventListener<?>> eventListeners = List.of();
 
     private DiRuntimeBootstrap(List<Class<?>> configurationClasses,
                                List<String> scanPackages,
@@ -75,6 +78,19 @@ public final class DiRuntimeBootstrap implements Lifecycle {
                 .stream()
                 .sorted(Comparator.comparingInt(CommandLineRunner::getOrder))
                 .toList();
+        ApplicationEventPublisher publisher = context.get(ApplicationEventPublisher.class);
+        if (publisher != null) {
+            List<ApplicationEventListener<?>> listeners = new ArrayList<>();
+            for (ApplicationEventListener listener : registry.getBeansOfType(ApplicationEventListener.class)) {
+                listeners.add(listener);
+            }
+            eventListeners = List.copyOf(listeners);
+            for (ApplicationEventListener<?> listener : eventListeners) {
+                publisher.addListener(listener);
+            }
+        } else {
+            eventListeners = List.of();
+        }
         for (ApplicationLifecycle lifecycle : lifecycleBeans) {
             try {
                 lifecycle.init(context);
@@ -125,6 +141,13 @@ public final class DiRuntimeBootstrap implements Lifecycle {
         lifecycleBeans = List.of();
         applicationRunners = List.of();
         commandLineRunners = List.of();
+        ApplicationEventPublisher publisher = context.get(ApplicationEventPublisher.class);
+        if (publisher != null && !eventListeners.isEmpty()) {
+            for (ApplicationEventListener<?> listener : eventListeners) {
+                publisher.removeListener(listener);
+            }
+        }
+        eventListeners = List.of();
         registry = null;
         if (firstError != null) {
             throw firstError;

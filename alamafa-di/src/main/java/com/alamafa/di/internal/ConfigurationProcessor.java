@@ -9,6 +9,7 @@ import com.alamafa.di.annotation.Configuration;
 import com.alamafa.di.annotation.Import;
 import com.alamafa.di.internal.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -58,8 +59,11 @@ public final class ConfigurationProcessor {
         if (!processed.add(configClass)) {
             return;
         }
-        if (!configClass.isAnnotationPresent(Configuration.class)) {
+        if (!isConfigurationAnnotated(configClass)) {
             throw new IllegalArgumentException(configClass.getName() + " is not annotated with @Configuration");
+        }
+        if (configClass.isAnnotation()) {
+            return;
         }
         if (!ConditionEvaluator.matches(context, configClass)) {
             return;
@@ -84,6 +88,18 @@ public final class ConfigurationProcessor {
             Arrays.stream(importAnnotation.value()).forEach(this::processConfiguration);
         }
         registerBeanMethods(configClass, instance);
+    }
+
+    private boolean isConfigurationAnnotated(Class<?> type) {
+        if (type.isAnnotationPresent(Configuration.class)) {
+            return true;
+        }
+        for (Annotation annotation : type.getAnnotations()) {
+            if (annotation.annotationType().isAnnotationPresent(Configuration.class)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -2,7 +2,9 @@ package com.alamafa.di.internal;
 
 
 import com.alamafa.core.ApplicationContext;
+import com.alamafa.di.BeanRegistry;
 import com.alamafa.di.annotation.ConditionalOnClass;
+import com.alamafa.di.annotation.ConditionalOnMissingBean;
 import com.alamafa.di.annotation.ConditionalOnProperty;
 
 import java.lang.reflect.AnnotatedElement;
@@ -11,7 +13,8 @@ import java.util.Optional;
 import com.alamafa.config.Configuration;
 
 /**
- * 评估条件注解（目前支持 {@link ConditionalOnProperty}）。
+ * 评估条件注解（支持 {@link ConditionalOnProperty}、{@link ConditionalOnClass}、
+ * {@link com.alamafa.di.annotation.ConditionalOnMissingBean} 等）。
  */
 public final class ConditionEvaluator {
     private ConditionEvaluator() {
@@ -22,7 +25,9 @@ public final class ConditionEvaluator {
      */
     public static boolean matches(ApplicationContext context, AnnotatedElement element) {
         Objects.requireNonNull(context, "context");
-        return matchesProperty(context, element) && matchesOnClass(element);
+        return matchesProperty(context, element)
+                && matchesOnClass(element)
+                && matchesOnMissingBean(context, element);
     }
 
     private static boolean matchesProperty(ApplicationContext context, AnnotatedElement element) {
@@ -30,18 +35,31 @@ public final class ConditionEvaluator {
         if (conditional == null) {
             return true;
         }
-        String propertyName = conditional.name();
-        String expected = conditional.havingValue();
-        boolean matchIfMissing = conditional.matchIfMissing();
-
-        String value = resolveProperty(context, propertyName);
-        if (value == null) {
-            return matchIfMissing;
-        }
-        if (expected.isEmpty()) {
+        String[] propertyNames = resolvePropertyNames(conditional);
+        if (propertyNames.length == 0) {
             return true;
         }
-        return expected.equals(value);
+        String expected = conditional.havingValue();
+        boolean matchIfMissing = conditional.matchIfMissing();
+        String prefix = conditional.prefix();
+
+        for (String name : propertyNames) {
+            if (name == null || name.isBlank()) {
+                continue;
+            }
+            String fullName = buildPropertyName(prefix, name.trim());
+            String value = resolveProperty(context, fullName);
+            if (value == null) {
+                if (!matchIfMissing) {
+                    return false;
+                }
+                continue;
+            }
+            if (!expected.isEmpty() && !expected.equals(value)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean matchesOnClass(AnnotatedElement element) {
@@ -62,6 +80,69 @@ public final class ConditionEvaluator {
             }
         }
         return true;
+    }
+
+    private static boolean matchesOnMissingBean(ApplicationContext context, AnnotatedElement element) {
+        ConditionalOnMissingBean conditional = element.getAnnotation(ConditionalOnMissingBean.class);
+        if (conditional == null) {
+            return true;
+        }
+        BeanRegistry registry = context.get(BeanRegistry.class);
+        if (registry == null) {
+            return true;
+        }
+        for (Class<?> type : conditional.value()) {
+            if (type == null) {
+                continue;
+            }
+            if (registry.hasBeanDefinition(type)) {
+                return false;
+            }
+        }
+        for (String name : conditional.name()) {
+            if (name == null) {
+                continue;
+            }
+            String trimmed = name.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (registry.hasBeanName(trimmed)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String[] resolvePropertyNames(ConditionalOnProperty conditional) {
+        String[] values = conditional.value();
+        String[] names = conditional.name();
+        if ((values == null || values.length == 0) && (names == null || names.length == 0)) {
+            return new String[0];
+        }
+        if (values == null || values.length == 0) {
+            return names;
+        }
+        if (names == null || names.length == 0) {
+            return values;
+        }
+        String[] combined = new String[values.length + names.length];
+        System.arraycopy(values, 0, combined, 0, values.length);
+        System.arraycopy(names, 0, combined, values.length, names.length);
+        return combined;
+    }
+
+    private static String buildPropertyName(String prefix, String name) {
+        if (prefix == null || prefix.isBlank()) {
+            return name;
+        }
+        if (name.isEmpty()) {
+            return prefix;
+        }
+        if (prefix.endsWith(".")) {
+            return prefix + name;
+        }
+        return prefix + "." + name;
     }
 
     private static boolean isClassPresent(String className, ClassLoader loader) {
