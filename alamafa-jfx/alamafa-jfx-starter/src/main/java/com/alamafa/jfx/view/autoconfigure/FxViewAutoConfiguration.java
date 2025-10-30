@@ -1,9 +1,8 @@
 package com.alamafa.jfx.view.autoconfigure;
 
-import com.alamafa.core.ApplicationContext;
 import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
+import com.alamafa.core.ApplicationContext;
 import com.alamafa.di.annotation.Bean;
-import com.alamafa.di.annotation.Configuration;
 import com.alamafa.jfx.view.FxViewLoader;
 import com.alamafa.jfx.view.ResourceResolver;
 import com.alamafa.jfx.view.meta.FxViewMetadataProcessor;
@@ -29,5 +28,4 @@ public class FxViewAutoConfiguration {
     public FxViewMetadataProcessor fxViewMetadataProcessor(FxViewRegistry registry) {
         return new FxViewMetadataProcessor(registry);
     }
-
 }

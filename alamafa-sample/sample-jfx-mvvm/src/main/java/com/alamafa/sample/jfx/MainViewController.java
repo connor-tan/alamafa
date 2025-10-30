@@ -15,7 +15,7 @@ import javafx.stage.Modality;
         viewModel = MainViewModel.class,
         primary = true,
         title = "Alamafa JavaFX MVVM Sample",
-        width = 480,
+        width = 980,
         height = 320,
         resizable = true
 )

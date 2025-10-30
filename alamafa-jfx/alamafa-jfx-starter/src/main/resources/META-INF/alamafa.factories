@@ -1,2 +1,3 @@
 com.alamafa.bootstrap.autoconfigure.AutoConfiguration=\
+  com.alamafa.jfx.view.autoconfigure.FxViewAutoConfiguration,\
   com.alamafa.jfx.viewmodel.autoconfigure.FxViewModelAutoConfiguration
