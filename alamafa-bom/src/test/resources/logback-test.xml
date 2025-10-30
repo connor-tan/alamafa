@@ -1,0 +1,8 @@
+<configuration>
+    <appender name="NOP" class="ch.qos.logback.core.read.ListAppender"/>
+
+    <root level="ERROR">
+        <appender-ref ref="NOP"/>
+    </root>
+</configuration>
+

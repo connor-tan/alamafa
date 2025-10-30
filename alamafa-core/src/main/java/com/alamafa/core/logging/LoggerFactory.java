@@ -7,8 +7,10 @@ import java.util.function.Function;
  * 获取日志实例的入口，默认使用 SLF4J，亦可在测试或其他运行时覆盖提供者。
  */
 public final class LoggerFactory {
-    private static volatile Function<String, AlamafaLogger> provider =
+    private static final Function<String, AlamafaLogger> DEFAULT_PROVIDER =
             name -> new Slf4jLoggerAdapter(org.slf4j.LoggerFactory.getLogger(name));
+
+    private static volatile Function<String, AlamafaLogger> provider = DEFAULT_PROVIDER;
 
     private LoggerFactory() {
     }
@@ -34,5 +36,12 @@ public final class LoggerFactory {
      */
     public static void setProvider(Function<String, AlamafaLogger> customProvider) {
         provider = Objects.requireNonNull(customProvider, "customProvider");
+    }
+
+    /**
+     * Restores the default provider backed by SLF4J/Logback.
+     */
+    public static void resetProvider() {
+        provider = DEFAULT_PROVIDER;
     }
 }

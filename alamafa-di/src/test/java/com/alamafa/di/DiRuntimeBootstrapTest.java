@@ -1,8 +1,11 @@
 package com.alamafa.di;
 
 import com.alamafa.config.Configuration;
+import com.alamafa.core.ApplicationArguments;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.core.ApplicationLifecycle;
+import com.alamafa.core.ApplicationShutdown;
+import com.alamafa.core.runner.ApplicationRunner;
 import com.alamafa.di.BeanRegistry;
 import com.alamafa.di.annotation.Bean;
 import com.alamafa.di.annotation.PostConstruct;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DiRuntimeBootstrapTest {
     private static final List<String> EVENTS = new ArrayList<>();
+    private static final List<String> RUNNER_EVENTS = new ArrayList<>();
 
     @Test
     void applicationLifecycleBeansRunInOrder() throws Exception {
@@ -53,6 +58,26 @@ class DiRuntimeBootstrapTest {
         assertNotNull(context.get(BeanRegistry.class));
     }
 
+    @Test
+    void applicationRunnerExecutesAndTriggersAutoShutdown() throws Exception {
+        RUNNER_EVENTS.clear();
+        AtomicBoolean shutdownRequested = new AtomicBoolean(false);
+        ApplicationContext context = new ApplicationContext();
+        context.put(ApplicationArguments.class, new ApplicationArguments("--name=test"));
+        context.put(ApplicationShutdown.class, () -> shutdownRequested.set(true));
+
+        DiRuntimeBootstrap bootstrap = DiRuntimeBootstrap.builder()
+                .withConfigurations(RunnerConfig.class)
+                .build();
+
+        bootstrap.init(context);
+        bootstrap.start(context);
+        bootstrap.stop(context);
+
+        assertEquals(List.of("runner:test"), RUNNER_EVENTS);
+        assertTrue(shutdownRequested.get());
+    }
+
     @com.alamafa.di.annotation.Configuration
     static class TestConfig {
         @Bean
@@ -63,6 +88,17 @@ class DiRuntimeBootstrapTest {
         @Bean
         BetaLifecycle betaLifecycle() {
             return new BetaLifecycle();
+        }
+    }
+
+    @com.alamafa.di.annotation.Configuration
+    static class RunnerConfig {
+        @Bean
+        ApplicationRunner applicationRunner() {
+            return (ctx, args) -> {
+                String value = args == null ? "" : String.join("", args.asList());
+                RUNNER_EVENTS.add("runner:" + value.replace("--name=", ""));
+            };
         }
     }
 

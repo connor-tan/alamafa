@@ -2,13 +2,17 @@ package com.alamafa.di;
 
 import com.alamafa.config.Configuration;
 import com.alamafa.config.ConfigurationLoader;
+import com.alamafa.core.ApplicationArguments;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.core.ApplicationLifecycle;
+import com.alamafa.core.ApplicationShutdown;
 import com.alamafa.core.Lifecycle;
 import com.alamafa.core.LifecycleExecutionException;
 import com.alamafa.core.LifecyclePhase;
 import com.alamafa.core.logging.AlamafaLogger;
 import com.alamafa.core.logging.LoggerFactory;
+import com.alamafa.core.runner.ApplicationRunner;
+import com.alamafa.core.runner.CommandLineRunner;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,6 +32,8 @@ public final class DiRuntimeBootstrap implements Lifecycle {
 
     private BeanRegistry registry;
     private List<ApplicationLifecycle> lifecycleBeans = List.of();
+    private List<ApplicationRunner> applicationRunners = List.of();
+    private List<CommandLineRunner> commandLineRunners = List.of();
 
     private DiRuntimeBootstrap(List<Class<?>> configurationClasses,
                                List<String> scanPackages,
@@ -61,6 +67,14 @@ public final class DiRuntimeBootstrap implements Lifecycle {
                 .stream()
                 .sorted(Comparator.comparingInt(ApplicationLifecycle::getOrder))
                 .toList();
+        applicationRunners = registry.getBeansOfType(ApplicationRunner.class)
+                .stream()
+                .sorted(Comparator.comparingInt(ApplicationRunner::getOrder))
+                .toList();
+        commandLineRunners = registry.getBeansOfType(CommandLineRunner.class)
+                .stream()
+                .sorted(Comparator.comparingInt(CommandLineRunner::getOrder))
+                .toList();
         for (ApplicationLifecycle lifecycle : lifecycleBeans) {
             try {
                 lifecycle.init(context);
@@ -80,6 +94,10 @@ public final class DiRuntimeBootstrap implements Lifecycle {
                 LOGGER.error("ApplicationLifecycle {} failed during start", lifecycle.getClass().getName(), ex);
                 throw wrap(lifecycle, LifecyclePhase.START, ex);
             }
+        }
+        runRunners(context);
+        if (lifecycleBeans.isEmpty()) {
+            attemptAutoShutdown(context);
         }
     }
 
@@ -105,6 +123,8 @@ public final class DiRuntimeBootstrap implements Lifecycle {
             activeRegistry.destroySingletons();
         }
         lifecycleBeans = List.of();
+        applicationRunners = List.of();
+        commandLineRunners = List.of();
         registry = null;
         if (firstError != null) {
             throw firstError;
@@ -116,6 +136,14 @@ public final class DiRuntimeBootstrap implements Lifecycle {
             return execution;
         }
         return new LifecycleExecutionException(phase, lifecycle.getClass().getName(), ex);
+    }
+
+    private LifecycleExecutionException wrap(Object runner, Exception ex) {
+        if (ex instanceof LifecycleExecutionException execution && execution.phase() == LifecyclePhase.START) {
+            return execution;
+        }
+        String target = runner == null ? "unknown runner" : runner.getClass().getName();
+        return new LifecycleExecutionException(LifecyclePhase.START, target, ex);
     }
 
     private BeanRegistry ensureRegistry(ApplicationContext context) {
@@ -154,6 +182,41 @@ public final class DiRuntimeBootstrap implements Lifecycle {
                             true, false));
         }
         context.put(BeanRegistry.class, registry);
+    }
+
+    private void runRunners(ApplicationContext context) throws Exception {
+        if (applicationRunners.isEmpty() && commandLineRunners.isEmpty()) {
+            return;
+        }
+        ApplicationArguments arguments = context.get(ApplicationArguments.class);
+        for (ApplicationRunner runner : applicationRunners) {
+            try {
+                runner.run(context, arguments);
+            } catch (Exception ex) {
+                LOGGER.error("ApplicationRunner {} failed", runner.getClass().getName(), ex);
+                throw wrap(runner, ex);
+            }
+        }
+        for (CommandLineRunner runner : commandLineRunners) {
+            try {
+                runner.run(arguments);
+            } catch (Exception ex) {
+                LOGGER.error("CommandLineRunner {} failed", runner.getClass().getName(), ex);
+                throw wrap(runner, ex);
+            }
+        }
+    }
+
+    private void attemptAutoShutdown(ApplicationContext context) {
+        if (applicationRunners.isEmpty() && commandLineRunners.isEmpty()) {
+            return;
+        }
+        ApplicationShutdown shutdown = context.get(ApplicationShutdown.class);
+        if (shutdown != null) {
+            shutdown.requestShutdown();
+        } else {
+            LOGGER.warn("Application runners completed but ApplicationShutdown is unavailable; JVM will remain running.");
+        }
     }
 
     /**
