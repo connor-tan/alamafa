@@ -4,6 +4,7 @@ import com.alamafa.core.ApplicationContext;
 import com.alamafa.di.annotation.Component;
 import com.alamafa.di.annotation.Inject;
 import com.alamafa.di.annotation.Qualifier;
+import com.alamafa.di.annotation.Service;
 import com.alamafa.di.BeanPostProcessor;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ class BeanInjectionFeaturesTest {
         bootstrap.init(context);
 
         BeanRegistry registry = context.get(BeanRegistry.class);
-        Service primary = registry.get(Service.class);
+        BusinessService primary = registry.get(BusinessService.class);
         assertTrue(primary instanceof PrimaryService);
 
         InjectionClient client = registry.get(InjectionClient.class);
@@ -38,12 +39,12 @@ class BeanInjectionFeaturesTest {
         assertTrue(RecorderPostProcessor.processed.contains(InjectionClient.class));
     }
 
-    interface Service {
+    interface BusinessService {
         String name();
     }
 
     @Component(primary = true)
-    static class PrimaryService implements Service {
+    static class PrimaryService implements BusinessService {
         @Override
         public String name() {
             return "primary";
@@ -51,15 +52,15 @@ class BeanInjectionFeaturesTest {
     }
 
     @Component
-    static class SecondaryService implements Service {
+    static class SecondaryService implements BusinessService {
         @Override
         public String name() {
             return "secondary";
         }
     }
 
-    @Component
-    static class ThirdService implements Service {
+    @Service
+    static class ThirdService implements BusinessService {
         @Override
         public String name() {
             return "third";
@@ -68,16 +69,16 @@ class BeanInjectionFeaturesTest {
 
     @Component
     static class InjectionClient {
-        final List<Service> services;
-        final Service secondary;
+        final List<BusinessService> services;
+        final BusinessService secondary;
         final Optional<MissingService> missing;
-        final Set<Service> serviceSet;
+        final Set<BusinessService> serviceSet;
 
         @Inject
-        InjectionClient(List<Service> services,
-                        @Qualifier("secondaryService") Service secondary,
+        InjectionClient(List<BusinessService> services,
+                        @Qualifier("secondaryService") BusinessService secondary,
                         Optional<MissingService> missing,
-                        Set<Service> serviceSet) {
+                        Set<BusinessService> serviceSet) {
             this.services = services;
             this.secondary = secondary;
             this.missing = missing;
