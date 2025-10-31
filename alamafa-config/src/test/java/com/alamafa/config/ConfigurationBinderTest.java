@@ -49,6 +49,21 @@ class ConfigurationBinderTest {
         assertTrue(ex.getMessage().contains("duration"));
     }
 
+    @Test
+    void bindsFieldsWithUppercaseAcronyms() {
+        Configuration config = ConfigurationLoader.create()
+                .addProperties(Map.of(
+                        "app.url", "https://alamafa.dev",
+                        "app.http.server", "true"
+                ))
+                .load();
+
+        AcronymProperties properties = ConfigurationBinder.bind(config, AcronymProperties.class);
+
+        assertEquals("https://alamafa.dev", properties.getURL());
+        assertTrue(properties.isHTTPServer());
+    }
+
     @ConfigurationProperties(prefix = "app")
     static class AppProperties {
         private String name;
@@ -107,6 +122,28 @@ class ConfigurationBinderTest {
 
         public void setDuration(java.time.Duration duration) {
             this.duration = duration;
+        }
+    }
+
+    @ConfigurationProperties(prefix = "app")
+    static class AcronymProperties {
+        private String URL;
+        private boolean HTTPServer;
+
+        public String getURL() {
+            return URL;
+        }
+
+        public void setURL(String URL) {
+            this.URL = URL;
+        }
+
+        public boolean isHTTPServer() {
+            return HTTPServer;
+        }
+
+        public void setHTTPServer(boolean HTTPServer) {
+            this.HTTPServer = HTTPServer;
         }
     }
 }

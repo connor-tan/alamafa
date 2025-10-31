@@ -315,6 +315,22 @@ public final class BeanRegistry {
         return defs == null ? List.of() : List.copyOf(defs);
     }
 
+    /**
+     * 返回所有注册的 BeanDefinition（去重后只读）。
+     */
+    public List<BeanDefinition<?>> allDefinitions() {
+        Set<BeanDefinition<?>> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<BeanDefinition<?>> all = new ArrayList<>();
+        definitions.values().forEach(defs -> {
+            for (BeanDefinition<?> definition : defs) {
+                if (seen.add(definition)) {
+                    all.add(definition);
+                }
+            }
+        });
+        return List.copyOf(all);
+    }
+
     private <T> BeanDefinition<T> resolveDefinition(Class<T> type) {
         List<BeanDefinition<?>> candidates = definitions.get(type);
         if (candidates == null || candidates.isEmpty()) {

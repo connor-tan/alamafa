@@ -132,15 +132,44 @@ public final class ConfigurationBinder {
     }
 
     private static String toPropertyName(String fieldName) {
+        if (fieldName == null || fieldName.isBlank()) {
+            return "";
+        }
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < fieldName.length(); i++) {
-            char ch = fieldName.charAt(i);
-            if (Character.isUpperCase(ch)) {
-                builder.append('.').append(Character.toLowerCase(ch));
+        char[] chars = fieldName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char current = chars[i];
+            if (current == '_') {
+                if (builder.length() > 0 && builder.charAt(builder.length() - 1) != '.') {
+                    builder.append('.');
+                }
+                continue;
+            }
+            if (Character.isUpperCase(current)) {
+                boolean nextIsLower = (i + 1 < chars.length) && Character.isLowerCase(chars[i + 1]);
+                boolean prevIsLowerOrDigit = (i > 0) && (Character.isLowerCase(chars[i - 1]) || Character.isDigit(chars[i - 1]));
+                boolean prevIsUpper = (i > 0) && Character.isUpperCase(chars[i - 1]);
+                if (builder.length() > 0 && builder.charAt(builder.length() - 1) != '.'
+                        && (prevIsLowerOrDigit || (prevIsUpper && nextIsLower))) {
+                    builder.append('.');
+                }
+                builder.append(Character.toLowerCase(current));
             } else {
-                builder.append(ch);
+                if (builder.length() > 0 && builder.charAt(builder.length() - 1) == '.' && current == '.') {
+                    continue;
+                }
+                if (builder.length() > 0 && builder.charAt(builder.length() - 1) != '.' && current == '.') {
+                    builder.append('.');
+                } else {
+                    builder.append(Character.toLowerCase(current));
+                }
             }
         }
-        return builder.toString().replace("..", ".").toLowerCase(Locale.ROOT);
+        int length = builder.length();
+        while (length > 0 && builder.charAt(length - 1) == '.') {
+            builder.setLength(length - 1);
+            length = builder.length();
+        }
+        return builder.toString();
     }
 }

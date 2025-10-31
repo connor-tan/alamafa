@@ -8,6 +8,7 @@ import com.alamafa.jfx.view.FxView;
 import com.alamafa.jfx.view.FxViewLoader;
 import com.alamafa.jfx.view.annotation.PostShow;
 import com.alamafa.jfx.view.annotation.PreClose;
+import com.alamafa.jfx.view.annotation.FxViewSpec;
 import com.alamafa.jfx.view.meta.FxViewDescriptor;
 import com.alamafa.jfx.view.meta.FxViewRegistry;
 import com.alamafa.jfx.viewmodel.FxViewModel;
@@ -22,6 +23,8 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
+import com.alamafa.di.BeanDefinition;
+import com.alamafa.di.BeanRegistry;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class FxWindowManager {
     private static final AlamafaLogger LOGGER = LoggerFactory.getLogger(FxWindowManager.class);
@@ -221,9 +225,11 @@ public final class FxWindowManager {
                                            FxView<?> view,
                                            Object controller,
                                            FxViewModel viewModel) {
-        EventHandler<WindowEvent> closeHandler = event -> {
-            invokeLifecycleHooks(controller, PreClose.class, stage, view, viewModel, event);
-            invokeLifecycleHooks(viewModel, PreClose.class, stage, view, viewModel, event);
+        AtomicBoolean closed = new AtomicBoolean(false);
+        Runnable cleanup = () -> {
+            if (!closed.compareAndSet(false, true)) {
+                return;
+            }
             if (viewModel != null) {
                 binder.unbind(viewModel);
             }
@@ -232,7 +238,17 @@ public final class FxWindowManager {
                 primaryHandle = null;
             }
         };
+
+        EventHandler<WindowEvent> closeHandler = event -> {
+            invokeLifecycleHooks(controller, PreClose.class, stage, view, viewModel, event);
+            invokeLifecycleHooks(viewModel, PreClose.class, stage, view, viewModel, event);
+            if (event.isConsumed()) {
+                return;
+            }
+            cleanup.run();
+        };
         stage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, closeHandler);
+        stage.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> cleanup.run());
 
         stage.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<>() {
             @Override
@@ -340,6 +356,10 @@ public final class FxWindowManager {
         if (descriptor.isPresent()) {
             return descriptor;
         }
+        Optional<FxViewDescriptor> discovered = findPrimaryFromDefinitions();
+        if (discovered.isPresent()) {
+            return discovered;
+        }
         String configured = configuration != null
                 ? configuration.get("jfx.window.primary-view").orElse(null)
                 : null;
@@ -356,5 +376,24 @@ public final class FxWindowManager {
             LOGGER.warn("Failed to resolve configured primary view {}", configured, ex);
             return Optional.empty();
         }
+    }
+
+    private Optional<FxViewDescriptor> findPrimaryFromDefinitions() {
+        BeanRegistry registry = context.get(BeanRegistry.class);
+        if (registry == null) {
+            return Optional.empty();
+        }
+        for (BeanDefinition<?> definition : registry.allDefinitions()) {
+            Class<?> type = definition.type();
+            FxViewSpec spec = type.getAnnotation(FxViewSpec.class);
+            if (spec != null && spec.primary()) {
+                try {
+                    return Optional.of(viewLoader.descriptor(type));
+                } catch (Exception ex) {
+                    LOGGER.warn("Failed to resolve descriptor for primary view {}", type.getName(), ex);
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

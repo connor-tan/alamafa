@@ -9,6 +9,7 @@ import com.alamafa.jfx.view.meta.FxViewDescriptor;
 import com.alamafa.jfx.view.meta.FxViewRegistry;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,8 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.function.Supplier;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /**
  * Centralised JavaFX view loader that integrates Alamafa's {@link ApplicationContext} and DI container.
@@ -81,22 +82,9 @@ public final class FxViewLoader {
         Objects.requireNonNull(viewType, "viewType");
         FxViewDescriptor descriptor = descriptor(viewType);
         if (descriptor.shared()) {
-            @SuppressWarnings("unchecked")
-            FxView<T> cached = (FxView<T>) sharedViewCache.get(viewType);
-            if (cached != null) {
-                return cached;
-            }
+            return obtainSharedView(viewType, descriptor);
         }
-        FxView<T> view = descriptor.fxmlOptional()
-                .map(path -> loadByDescriptor(path, descriptor, viewType))
-                .orElseGet(() -> instantiateView(viewType));
-        if (descriptor.shared()) {
-            sharedViewCache.putIfAbsent(viewType, view);
-            @SuppressWarnings("unchecked")
-            FxView<T> cached = (FxView<T>) sharedViewCache.get(viewType);
-            return cached;
-        }
-        return view;
+        return createViewInstance(viewType, descriptor);
     }
 
     private <T> FxView<T> loadByDescriptor(String fxmlPath, FxViewDescriptor descriptor, Class<T> viewType) {
@@ -259,5 +247,29 @@ public final class FxViewLoader {
             throw new ViewLoadingException("No @FxViewSpec metadata registered for " + viewType.getName());
         }
         return descriptor;
+    }
+
+    private <T> FxView<T> createViewInstance(Class<T> viewType, FxViewDescriptor descriptor) {
+        return descriptor.fxmlOptional()
+                .map(path -> loadByDescriptor(path, descriptor, viewType))
+                .orElseGet(() -> instantiateView(viewType));
+    }
+
+    private <T> FxView<T> obtainSharedView(Class<T> viewType, FxViewDescriptor descriptor) {
+        @SuppressWarnings("unchecked")
+        FxView<T> cached = (FxView<T>) sharedViewCache.get(viewType);
+        if (cached != null) {
+            Parent root = cached.root();
+            if (root == null) {
+                return cached;
+            }
+            Scene scene = root.getScene();
+            if (scene == null || scene.getWindow() == null) {
+                return cached;
+            }
+        }
+        FxView<T> view = createViewInstance(viewType, descriptor);
+        sharedViewCache.put(viewType, view);
+        return view;
     }
 }

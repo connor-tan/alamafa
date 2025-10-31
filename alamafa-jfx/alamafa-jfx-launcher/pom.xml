@@ -34,7 +34,4 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <javafx.platform>linux</javafx.platform>
-    </properties>
 </project>

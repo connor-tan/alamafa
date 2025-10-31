@@ -4,8 +4,6 @@ import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-import java.util.Objects;
-
 public final class FxWindowOptions {
     private final String title;
     private final Double width;
