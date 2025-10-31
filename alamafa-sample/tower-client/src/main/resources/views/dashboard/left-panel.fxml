@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.alamafa.tower.client.ui.dashboard.left.LeftPanelViewController"
+      spacing="12" styleClass="left-panel">
+    <padding>
+        <Insets top="24" right="18" bottom="24" left="18"/>
+    </padding>
+    <children>
+        <Label text="导航" styleClass="panel-title"/>
+        <Label text="● 实时监控" styleClass="panel-item"/>
+        <Label text="● 历史回放" styleClass="panel-item"/>
+        <Label text="● 告警中心" styleClass="panel-item"/>
+        <Label text="● 设备管理" styleClass="panel-item"/>
+    </children>
+</VBox>

@@ -16,5 +16,6 @@
         <module>sample-greeting-starter</module>
         <module>sample-helloworld</module>
         <module>sample-jfx-mvvm</module>
+        <module>tower-client</module>
     </modules>
 </project>

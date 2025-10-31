@@ -13,6 +13,7 @@ Alamafa 是一个面向桌面/富客户端应用的轻量级引导与依赖注�
 | `alamafa-jfx-*` | JavaFX 集成：Launcher（桥接 FX 生命周期）、视图装载/元数据、ViewModel & Window 管理、Starter 自动配置。 |
 | `alamafa-logging-starter` | Logging 自动化配置（SLF4J + Logback、JUL Bridge）。 |
 | `alamafa-sample` | 示例工程（Greeting Starter、CLI + JavaFX MVVM Demo）。 |
+| `alamafa-sample/tower-client` | 使用 Alamafa JavaFX 栈构建的桌面监控客户端样例（登录 + 主界面）。 |
 
 ## JavaFX 平台配置
 

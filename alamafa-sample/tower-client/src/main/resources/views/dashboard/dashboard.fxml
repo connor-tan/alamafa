@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.alamafa.tower.client.ui.dashboard.DashboardViewController"
+            prefWidth="960" prefHeight="640" styleClass="dashboard-background">
+    <top>
+        <StackPane fx:id="headerContainer" BorderPane.alignment="CENTER"/>
+    </top>
+    <bottom>
+        <StackPane fx:id="footerContainer" BorderPane.alignment="CENTER"/>
+    </bottom>
+    <left>
+        <StackPane fx:id="leftContainer" BorderPane.alignment="CENTER"/>
+    </left>
+    <center>
+        <StackPane fx:id="centerContainer" BorderPane.alignment="CENTER"/>
+    </center>
+    <right>
+        <StackPane fx:id="rightContainer" BorderPane.alignment="CENTER"/>
+    </right>
+</BorderPane>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.alamafa.tower.client.ui.dashboard.center.CenterPanelViewController"
+           alignment="CENTER" styleClass="center-panel">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+    <children>
+        <Label text="监控画面占位区域" styleClass="panel-placeholder"/>
+    </children>
+</StackPane>

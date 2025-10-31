@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.alamafa.tower.client.ui.dashboard.footer.FooterViewController"
+      alignment="CENTER_RIGHT" styleClass="dashboard-footer">
+    <padding>
+        <Insets top="12" right="24" bottom="12" left="24"/>
+    </padding>
+    <children>
+        <Label text="© 2025 Tower Client" styleClass="footer-text"/>
+    </children>
+</HBox>

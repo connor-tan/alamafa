@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.alamafa.tower.client.ui.dashboard.header.HeaderViewController"
+      alignment="CENTER_RIGHT" spacing="12" styleClass="dashboard-header">
+    <padding>
+        <Insets top="16" right="24" bottom="16" left="24"/>
+    </padding>
+    <children>
+        <Region HBox.hgrow="ALWAYS"/>
+        <StackPane fx:id="avatarHolder" styleClass="avatar-circle">
+            <Label fx:id="avatarLabel" styleClass="avatar-initials"/>
+        </StackPane>
+        <VBox alignment="CENTER_LEFT" spacing="2">
+            <Label text="当前用户" styleClass="dashboard-caption"/>
+            <Label fx:id="usernameLabel" styleClass="dashboard-username"/>
+        </VBox>
+    </children>
+</HBox>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.alamafa.tower.client.ui.login.LoginViewController"
+            prefWidth="440" prefHeight="520" styleClass="login-root">
+    <!-- Header area with title and airplane icon -->
+    <HBox spacing="12" AnchorPane.topAnchor="32" AnchorPane.leftAnchor="40" AnchorPane.rightAnchor="40"
+          alignment="CENTER_LEFT">
+        <Label text="LOGIN" styleClass="login-header"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <ImageView fitWidth="96" fitHeight="48" preserveRatio="true">
+            <Image url="@../images/航空安全登录界面设计.png"/>
+        </ImageView>
+    </HBox>
+    <!-- Card container -->
+    <VBox spacing="18" AnchorPane.topAnchor="120" AnchorPane.leftAnchor="60" AnchorPane.rightAnchor="60"
+          AnchorPane.bottomAnchor="120" alignment="TOP_CENTER" styleClass="login-panel">
+        <children>
+            <!-- Username input group -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="input-group">
+                <Label text="username" styleClass="icon-label"/>
+                <TextField fx:id="usernameField" promptText="Username" styleClass="input-field"/>
+            </HBox>
+            <!-- Password input group -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="input-group">
+                <Label text="password" styleClass="icon-label"/>
+                <PasswordField fx:id="passwordField" promptText="Password" styleClass="input-field"/>
+            </HBox>
+            <!-- Remember / Forgot row -->
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="meta-row">
+                <CheckBox fx:id="rememberMeCheckBox" text="Remember me"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Hyperlink fx:id="forgotPasswordLink" text="Forgot password?"/>
+            </HBox>
+            <!-- Login button -->
+            <Button fx:id="loginButton" text="Log In" onAction="#handleLogin" maxWidth="Infinity"
+                    styleClass="login-button"/>
+            <!-- Error label -->
+            <Label fx:id="errorLabel" styleClass="error-label" wrapText="true" maxWidth="Infinity"/>
+        </children>
+    </VBox>
+    <!-- Bottom safety area -->
+    <HBox spacing="24" alignment="CENTER" AnchorPane.bottomAnchor="28" AnchorPane.leftAnchor="40"
+          AnchorPane.rightAnchor="40">
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="aa" styleClass="safety-icon"/>
+            <Label text="Secure" styleClass="safety-text"/>
+        </HBox>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <HBox alignment="CENTER_RIGHT" spacing="8">
+            <Label text="bb" styleClass="seatbelt-icon"/>
+            <Label text="Fasten" styleClass="safety-text"/>
+        </HBox>
+    </HBox>
+</AnchorPane>
