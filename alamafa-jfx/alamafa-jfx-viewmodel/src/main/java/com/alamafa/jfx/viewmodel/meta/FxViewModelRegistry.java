@@ -1,22 +1,29 @@
 package com.alamafa.jfx.viewmodel.meta;
 
 import com.alamafa.core.ApplicationContext;
+import com.alamafa.core.logging.AlamafaLogger;
+import com.alamafa.core.logging.LoggerFactory;
 import com.alamafa.di.BeanRegistry;
 import com.alamafa.jfx.viewmodel.FxViewModel;
 import com.alamafa.jfx.viewmodel.annotation.FxViewModelScope;
+import com.alamafa.jfx.viewmodel.annotation.FxViewModelSpec;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry of view-model descriptors plus scope-aware retrieval helpers.
  */
 public final class FxViewModelRegistry {
+    private static final AlamafaLogger LOGGER = LoggerFactory.getLogger(FxViewModelRegistry.class);
+
     private final Map<Class<?>, FxViewModelDescriptor> byType = new ConcurrentHashMap<>();
     private final Map<String, FxViewModelDescriptor> byName = new ConcurrentHashMap<>();
     private final Map<Class<?>, FxViewModel> applicationCache = new ConcurrentHashMap<>();
+    private final Set<String> scannedPackages = ConcurrentHashMap.newKeySet();
 
     public void register(FxViewModelDescriptor descriptor) {
         Objects.requireNonNull(descriptor, "descriptor");
@@ -54,8 +61,11 @@ public final class FxViewModelRegistry {
     }
 
     private <T extends FxViewModel> T instantiate(ApplicationContext context, BeanRegistry beanRegistry, Class<T> type) {
-        if (beanRegistry != null && beanRegistry.hasBeanDefinition(type)) {
-            return beanRegistry.get(type);
+        if (beanRegistry != null) {
+            ensureRegistered(beanRegistry, type);
+            if (beanRegistry.hasBeanDefinition(type)) {
+                return beanRegistry.get(type);
+            }
         }
         T fromContext = context.get(type);
         if (fromContext != null) {
@@ -65,6 +75,30 @@ public final class FxViewModelRegistry {
             return type.getDeclaredConstructor().newInstance();
         } catch (ReflectiveOperationException ex) {
             throw new IllegalStateException("Failed to instantiate view model " + type.getName(), ex);
+        }
+    }
+
+    private void ensureRegistered(BeanRegistry registry, Class<?> type) {
+        if (registry.hasBeanDefinition(type)) {
+            return;
+        }
+        FxViewModelSpec spec = type.getAnnotation(FxViewModelSpec.class);
+        if (spec == null) {
+            return;
+        }
+        String packageName = type.getPackageName();
+        if (packageName == null || packageName.isBlank()) {
+            return;
+        }
+        boolean firstScan = scannedPackages.add(packageName);
+        try {
+            registry.scanPackages(packageName);
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to scan package {} for view-model {}", packageName, type.getName(), ex);
+        }
+        if (!registry.hasBeanDefinition(type) && firstScan) {
+            LOGGER.debug("View-model {} not registered after scanning {}; will rely on reflection instantiation",
+                    type.getName(), packageName);
         }
     }
 }

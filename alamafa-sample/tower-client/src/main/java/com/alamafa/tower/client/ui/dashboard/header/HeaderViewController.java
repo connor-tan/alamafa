@@ -7,7 +7,7 @@ import javafx.scene.layout.StackPane;
 
 @FxViewSpec(
         fxml = "views/dashboard/header.fxml",
-        styles = {"styles/app.css"},
+        styles = {"styles/dashboard.css"},
         viewModel = HeaderViewModel.class
 )
 public class HeaderViewController {

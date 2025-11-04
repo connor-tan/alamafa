@@ -14,11 +14,13 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextInputControl;
 import javafx.stage.Stage;
 
 @FxViewSpec(
         fxml = "views/login.fxml",
-        styles = {"styles/app.css"},
+        styles = {"styles/login.css"},
         viewModel = LoginViewModel.class,
         primary = true,
         title = "Tower Client 登录",
@@ -27,6 +29,8 @@ import javafx.stage.Stage;
         resizable = false
 )
 public class LoginViewController {
+
+    private static final int MAX_CREDENTIAL_LENGTH = 20;
 
     @FXML
     private TextField usernameField;
@@ -58,12 +62,21 @@ public class LoginViewController {
     private void initialize() {
         errorLabel.setText("");
         forgotPasswordLink.setOnAction(event -> showForgotPasswordInfo());
+        applyLengthLimit(usernameField, MAX_CREDENTIAL_LENGTH);
+        applyLengthLimit(passwordField, MAX_CREDENTIAL_LENGTH);
+        if (passwordField != null) {
+            passwordField.setOnAction(event -> handleLogin());
+        }
+        if (usernameField != null) {
+            usernameField.setOnAction(event -> handleLogin());
+        }
     }
 
     public void setViewModel(LoginViewModel viewModel) {
         this.viewModel = viewModel;
         if (viewModel != null) {
             usernameField.textProperty().bindBidirectional(viewModel.usernameProperty());
+            passwordField.textProperty().bindBidirectional(viewModel.passwordProperty());
             rememberMeCheckBox.selectedProperty().bindBidirectional(viewModel.rememberMeProperty());
         }
     }
@@ -105,5 +118,16 @@ public class LoginViewController {
         return loginButton != null && loginButton.getScene() != null
                 ? (Stage) loginButton.getScene().getWindow()
                 : null;
+    }
+
+    private void applyLengthLimit(TextInputControl control, int maxLength) {
+        if (control == null || maxLength <= 0) {
+            return;
+        }
+        TextFormatter<String> formatter = new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            return newText.length() <= maxLength ? change : null;
+        });
+        control.setTextFormatter(formatter);
     }
 }

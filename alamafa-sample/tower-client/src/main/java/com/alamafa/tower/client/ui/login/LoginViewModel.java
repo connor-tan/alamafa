@@ -2,15 +2,35 @@ package com.alamafa.tower.client.ui.login;
 
 import com.alamafa.jfx.viewmodel.FxViewModel;
 import com.alamafa.jfx.viewmodel.annotation.FxViewModelSpec;
+import com.alamafa.tower.client.api.auth.AuthFailedException;
+import com.alamafa.tower.client.api.auth.AuthService;
+import com.alamafa.tower.client.api.auth.TokenPayload;
+import com.alamafa.tower.client.api.client.ApiClientException;
+import com.alamafa.tower.client.api.client.ApiNetworkException;
+import com.alamafa.tower.client.session.CredentialsStore;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.util.Objects;
+
 @FxViewModelSpec(lazy = false)
 public class LoginViewModel extends FxViewModel {
+    private static final String GENERIC_FAILURE_MESSAGE = "登录失败，请稍后再试";
+    private static final String NETWORK_FAILURE_MESSAGE = "无法连接服务器，请稍后再试";
+    private static final String CREDENTIAL_REQUIRED_MESSAGE = "请输入用户名和密码";
+
     private final StringProperty username = new SimpleStringProperty();
     private final BooleanProperty rememberMe = new SimpleBooleanProperty();
+    private final StringProperty password = new SimpleStringProperty();
+    private final AuthService authService;
+    private final CredentialsStore credentialsStore;
+
+    public LoginViewModel(AuthService authService, CredentialsStore credentialsStore) {
+        this.authService = Objects.requireNonNull(authService, "authService must not be null");
+        this.credentialsStore = Objects.requireNonNull(credentialsStore, "credentialsStore must not be null");
+    }
 
     public StringProperty usernameProperty() {
         return username;
@@ -20,15 +40,69 @@ public class LoginViewModel extends FxViewModel {
         return rememberMe;
     }
 
+    public StringProperty passwordProperty() {
+        return password;
+    }
+
+    @Override
+    protected void onAttach() {
+        credentialsStore.load().ifPresent(credentials -> {
+            username.set(credentials.username());
+            password.set(credentials.password());
+            rememberMe.set(true);
+        });
+    }
+
     public LoginResult authenticate(String usernameValue, String passwordValue, boolean remember) {
         if (usernameValue == null || usernameValue.isBlank() || passwordValue == null || passwordValue.isBlank()) {
-            return LoginResult.failure("请输入用户名和密码");
+            return LoginResult.failure(CREDENTIAL_REQUIRED_MESSAGE);
         }
-        String normalized = usernameValue.trim();
-        String displayName = Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1);
-        username.set(normalized);
-        rememberMe.set(remember);
-        return LoginResult.success(displayName, remember);
+
+        String normalizedUsername = usernameValue.trim();
+        String trimmedPassword = passwordValue.trim();
+        try {
+            TokenPayload payload = authService.authenticate(normalizedUsername, trimmedPassword);
+            if (payload == null) {
+                return LoginResult.failure(GENERIC_FAILURE_MESSAGE);
+            }
+            username.set(normalizedUsername);
+            rememberMe.set(remember);
+             handleRememberMe(remember, normalizedUsername, trimmedPassword);
+            return LoginResult.success(toDisplayName(normalizedUsername), remember);
+        } catch (IllegalArgumentException ex) {
+            return LoginResult.failure(messageOrDefault(ex.getMessage(), CREDENTIAL_REQUIRED_MESSAGE));
+        } catch (AuthFailedException ex) {
+            return LoginResult.failure(messageOrDefault(ex.getMessage(), "认证失败，请检查用户名或密码"));
+        } catch (ApiNetworkException ex) {
+            return LoginResult.failure(NETWORK_FAILURE_MESSAGE);
+        } catch (ApiClientException ex) {
+            return LoginResult.failure(messageOrDefault(ex.getMessage(), GENERIC_FAILURE_MESSAGE));
+        } catch (RuntimeException ex) {
+            return LoginResult.failure(GENERIC_FAILURE_MESSAGE);
+        }
+    }
+
+    private String toDisplayName(String normalizedUsername) {
+        if (normalizedUsername.isEmpty()) {
+            return "";
+        }
+        char first = Character.toUpperCase(normalizedUsername.charAt(0));
+        String rest = normalizedUsername.length() > 1 ? normalizedUsername.substring(1) : "";
+        return first + rest;
+    }
+
+    private String messageOrDefault(String candidate, String fallback) {
+        return candidate == null || candidate.isBlank() ? fallback : candidate;
+    }
+
+    private void handleRememberMe(boolean remember, String normalizedUsername, String trimmedPassword) {
+        if (remember) {
+            credentialsStore.save(normalizedUsername, trimmedPassword);
+            password.set(trimmedPassword);
+        } else {
+            credentialsStore.clear();
+            password.set("");
+        }
     }
 
     public record LoginResult(boolean success, String message, String displayName, boolean rememberMe) {

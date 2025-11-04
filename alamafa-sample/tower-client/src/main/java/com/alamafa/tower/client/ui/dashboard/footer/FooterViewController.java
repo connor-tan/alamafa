@@ -4,7 +4,7 @@ import com.alamafa.jfx.view.annotation.FxViewSpec;
 
 @FxViewSpec(
         fxml = "views/dashboard/footer.fxml",
-        styles = {"styles/app.css"}
+        styles = {"styles/dashboard.css"}
 )
 public class FooterViewController {
 }

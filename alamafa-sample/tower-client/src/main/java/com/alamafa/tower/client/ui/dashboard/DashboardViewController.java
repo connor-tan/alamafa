@@ -15,7 +15,7 @@ import javafx.scene.layout.StackPane;
 
 @FxViewSpec(
         fxml = "views/dashboard/dashboard.fxml",
-        styles = {"styles/app.css"},
+        styles = {"styles/dashboard.css"},
         viewModel = DashboardViewModel.class,
         title = "Tower Client 控制台",
         width = 960,

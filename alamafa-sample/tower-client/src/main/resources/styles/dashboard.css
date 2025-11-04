@@ -1,0 +1,81 @@
+.dashboard-background {
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #16213e);
+}
+
+.dashboard-header {
+    -fx-background-color: rgba(15, 23, 42, 0.7);
+}
+
+.dashboard-footer {
+    -fx-background-color: rgba(15, 23, 42, 0.6);
+}
+
+.footer-text {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+}
+
+.avatar-circle {
+    -fx-pref-width: 40;
+    -fx-pref-height: 40;
+    -fx-background-radius: 20;
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(to bottom, #38bdf8, #0ea5e9);
+}
+
+.avatar-initials {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.dashboard-caption {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+}
+
+.dashboard-username {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-placeholder {
+    -fx-alignment: center;
+}
+
+.placeholder-text {
+    -fx-text-fill: #cbd5f5;
+    -fx-font-size: 18px;
+}
+
+.left-panel {
+    -fx-background-color: rgba(15, 23, 42, 0.55);
+    -fx-background-radius: 0 16 16 0;
+}
+
+.right-panel {
+    -fx-background-color: rgba(15, 23, 42, 0.4);
+    -fx-background-radius: 16 0 0 16;
+}
+
+.center-panel {
+    -fx-background-color: rgba(15, 23, 42, 0.35);
+    -fx-background-radius: 18;
+}
+
+.panel-title {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.panel-item {
+    -fx-text-fill: #cbd5f5;
+    -fx-font-size: 13px;
+}
+
+.panel-placeholder {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+}
