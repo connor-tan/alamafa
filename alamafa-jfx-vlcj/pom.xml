@@ -6,28 +6,29 @@
 
     <parent>
         <groupId>com.alamafa</groupId>
-        <artifactId>alamafa-sample</artifactId>
+        <artifactId>alamafa</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>tower-client</artifactId>
-    <name>Tower Client Desktop Sample</name>
+    <artifactId>alamafa-jfx-vlcj</artifactId>
+    <name>Alamafa JavaFX VLCJ Integration</name>
 
     <dependencies>
         <dependency>
             <groupId>com.alamafa</groupId>
-            <artifactId>alamafa-jfx-starter</artifactId>
+            <artifactId>alamafa-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alamafa</groupId>
-            <artifactId>alamafa-jfx-vlcj</artifactId>
+            <artifactId>alamafa-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.17.1</version>
+            <groupId>com.alamafa</groupId>
+            <artifactId>alamafa-di</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -42,23 +43,25 @@
             <classifier>${javafx.platform}</classifier>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
-            <scope>test</scope>
+            <groupId>uk.co.caprica</groupId>
+            <artifactId>vlcj</artifactId>
+            <version>4.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.co.caprica</groupId>
+            <artifactId>vlcj-javafx</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.1</version>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.plugin.version}</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

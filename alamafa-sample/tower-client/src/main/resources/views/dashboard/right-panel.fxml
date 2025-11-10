@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.alamafa.tower.client.ui.dashboard.right.RightPanelViewController"
@@ -9,7 +10,7 @@
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
     <children>
-        <Label text="实时告警" styleClass="panel-title"/>
-        <Label text="暂无新的告警" styleClass="panel-placeholder"/>
+        <Label text="通道状态" styleClass="panel-title"/>
+        <ListView fx:id="channelList" prefHeight="400"/>
     </children>
 </VBox>

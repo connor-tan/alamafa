@@ -17,6 +17,7 @@
         <module>alamafa-logging-starter</module>
         <module>alamafa-sample</module>
         <module>alamafa-jfx</module>
+        <module>alamafa-jfx-vlcj</module>
     </modules>
 
     <properties>

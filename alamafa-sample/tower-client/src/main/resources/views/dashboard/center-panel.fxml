@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.alamafa.tower.client.ui.dashboard.center.CenterPanelViewController"
            alignment="CENTER" styleClass="center-panel">
@@ -9,6 +13,27 @@
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
     <children>
-        <Label text="监控画面占位区域" styleClass="panel-placeholder"/>
+        <VBox spacing="16" alignment="CENTER" prefWidth="640">
+            <children>
+                <StackPane fx:id="playerContainer" alignment="CENTER" prefHeight="360" styleClass="player-viewport">
+                    <children>
+                        <Label text="vlcj 外部播放器将以独立窗口展示视频"
+                               wrapText="true"
+                               styleClass="player-viewport__hint"/>
+                    </children>
+                </StackPane>
+                <VBox spacing="8" alignment="CENTER" styleClass="player-controls">
+                    <children>
+                        <Label fx:id="statusLabel" alignment="CENTER" wrapText="true"/>
+                        <HBox spacing="12" alignment="CENTER">
+                            <children>
+                                <Button fx:id="relaunchButton" text="启动默认视频" onAction="#handleLaunchDefault"/>
+                                <Button fx:id="stopButton" text="关闭播放器" onAction="#handleStopPlayer"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
     </children>
 </StackPane>
