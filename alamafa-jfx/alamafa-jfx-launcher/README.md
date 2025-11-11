@@ -1,4 +1,4 @@
-# Alamafa Documentation
+# Alamafa JavaFX Launcher Documentation
 
 - [English](README.en.md)
 - [简体中文](README.zh.md)
