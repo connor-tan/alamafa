@@ -20,13 +20,13 @@
           AnchorPane.bottomAnchor="120" alignment="TOP_CENTER" styleClass="login-panel">
         <!-- Username input group -->
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="input-group">
-            <Label text="username" styleClass="icon-label"/>
+            <Label text="用户名" styleClass="icon-label"/>
             <TextField fx:id="usernameField" promptText="Username" styleClass="input-field"
                        HBox.hgrow="ALWAYS" prefColumnCount="20"/>
         </HBox>
         <!-- Password input group -->
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="input-group">
-            <Label text="password" styleClass="icon-label"/>
+            <Label text="密  码" styleClass="icon-label"/>
             <PasswordField fx:id="passwordField" promptText="Password" styleClass="input-field"
                            HBox.hgrow="ALWAYS" prefColumnCount="20"/>
         </HBox>

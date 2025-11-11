@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpRequest;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,6 +65,20 @@ class HttpExecutorTest {
     }
 
     @Test
+    void postShouldSkipExpiredTokenAndClearStore() {
+        ExpiredTokenStore expiredStore = new ExpiredTokenStore();
+        transport.configure(200, """
+                {"code":200,"msg":null,"data":{"access_token":"abc","expires_in":720}}
+                """);
+        HttpExecutor executor = new HttpExecutor(properties, expiredStore, transport, mapper);
+
+        executor.post("/auth/login", new Credentials("admin", "123456"), TokenPayload.class);
+
+        assertTrue(transport.lastRequest.headers().firstValue("Authorization").isEmpty());
+        assertTrue(expiredStore.isCleared());
+    }
+
+    @Test
     void postShouldThrowWhenApiReturnsErrorCode() {
         transport.configure(200, """
                 {"code":401,"msg":"Unauthorized","data":null}
@@ -103,6 +118,35 @@ class HttpExecutorTest {
         public HttpTransportResponse execute(HttpRequest request) {
             this.lastRequest = request;
             return nextResponse;
+        }
+    }
+
+    private static final class ExpiredTokenStore extends TokenStore {
+        private final java.util.concurrent.atomic.AtomicBoolean cleared = new java.util.concurrent.atomic.AtomicBoolean();
+
+        @Override
+        public boolean hasValidToken() {
+            return false;
+        }
+
+        @Override
+        public boolean isExpired() {
+            return true;
+        }
+
+        @Override
+        public Optional<String> accessToken() {
+            return Optional.of("expired-token");
+        }
+
+        @Override
+        public void clear() {
+            super.clear();
+            cleared.set(true);
+        }
+
+        boolean isCleared() {
+            return cleared.get();
         }
     }
 }

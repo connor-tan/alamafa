@@ -1,6 +1,7 @@
 package com.alamafa.tower.client.ui.login;
 
 import com.alamafa.jfx.viewmodel.FxViewModel;
+import com.alamafa.jfx.viewmodel.annotation.FxViewModelScope;
 import com.alamafa.jfx.viewmodel.annotation.FxViewModelSpec;
 import com.alamafa.tower.client.api.auth.AuthFailedException;
 import com.alamafa.tower.client.api.auth.AuthService;
@@ -8,14 +9,19 @@ import com.alamafa.tower.client.api.auth.TokenPayload;
 import com.alamafa.tower.client.api.client.ApiClientException;
 import com.alamafa.tower.client.api.client.ApiNetworkException;
 import com.alamafa.tower.client.session.CredentialsStore;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
-@FxViewModelSpec(lazy = false)
+@FxViewModelSpec(lazy = false, scope = FxViewModelScope.VIEW)
 public class LoginViewModel extends FxViewModel {
     private static final String GENERIC_FAILURE_MESSAGE = "登录失败，请稍后再试";
     private static final String NETWORK_FAILURE_MESSAGE = "无法连接服务器，请稍后再试";
@@ -26,10 +32,13 @@ public class LoginViewModel extends FxViewModel {
     private final StringProperty password = new SimpleStringProperty();
     private final AuthService authService;
     private final CredentialsStore credentialsStore;
+    private final ExecutorService authExecutor;
+    private final BooleanProperty authenticating = new SimpleBooleanProperty(false);
 
     public LoginViewModel(AuthService authService, CredentialsStore credentialsStore) {
         this.authService = Objects.requireNonNull(authService, "authService must not be null");
         this.credentialsStore = Objects.requireNonNull(credentialsStore, "credentialsStore must not be null");
+        this.authExecutor = Executors.newSingleThreadExecutor(new LoginThreadFactory());
     }
 
     public StringProperty usernameProperty() {
@@ -44,12 +53,39 @@ public class LoginViewModel extends FxViewModel {
         return password;
     }
 
+    public BooleanProperty authenticatingProperty() {
+        return authenticating;
+    }
+
     @Override
     protected void onAttach() {
         credentialsStore.load().ifPresent(credentials -> {
             username.set(credentials.username());
             password.set(credentials.password());
             rememberMe.set(true);
+        });
+    }
+
+    @Override
+    protected void onDetach() {
+        authExecutor.shutdownNow();
+    }
+
+    public void authenticateAsync(String usernameValue,
+                                  String passwordValue,
+                                  boolean remember,
+                                  Consumer<LoginResult> callback) {
+        Objects.requireNonNull(callback, "callback");
+        if (authenticating.get()) {
+            return;
+        }
+        setAuthenticating(true);
+        authExecutor.submit(() -> {
+            LoginResult result = authenticate(usernameValue, passwordValue, remember);
+            Platform.runLater(() -> {
+                setAuthenticating(false);
+                callback.accept(result);
+            });
         });
     }
 
@@ -102,6 +138,23 @@ public class LoginViewModel extends FxViewModel {
         } else {
             credentialsStore.clear();
             password.set("");
+        }
+    }
+
+    private void setAuthenticating(boolean value) {
+        if (Platform.isFxApplicationThread()) {
+            authenticating.set(value);
+        } else {
+            Platform.runLater(() -> authenticating.set(value));
+        }
+    }
+
+    private static final class LoginThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "tower-login-worker");
+            thread.setDaemon(true);
+            return thread;
         }
     }
 

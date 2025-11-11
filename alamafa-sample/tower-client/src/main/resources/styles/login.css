@@ -1,72 +1,78 @@
 .login-background {
-    -fx-background-color: linear-gradient(to bottom, #0f172a, #1e293b);
+    -fx-background-color: linear-gradient(to bottom, -app-login-gradient-top, -app-login-gradient-bottom);
 }
 
 .login-card {
-    -fx-background-color: rgba(15, 23, 42, 0.75);
     -fx-background-radius: 18;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 16, 0, 0, 8);
     -fx-spacing: 14;
 }
 
+.login-card {
+    -fx-background-color: -app-surface-alt;
+    -fx-border-color: -app-panel-border;
+    -fx-border-width: 1;
+}
+
 .login-title {
     -fx-font-size: 26px;
-    -fx-text-fill: #f8fafc;
+    -fx-text-fill: -app-on-surface;
     -fx-font-weight: bold;
 }
 
 .login-subtitle {
-    -fx-text-fill: #cbd5f5;
+    -fx-text-fill: -app-on-surface;
+    -fx-opacity: 0.75;
     -fx-font-size: 14px;
 }
 
 .primary-button {
-    -fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8);
+    -fx-background-color: linear-gradient(to right, -app-primary, derive(-app-primary, -15%));
     -fx-background-radius: 10;
-    -fx-text-fill: white;
+    -fx-text-fill: -app-primary-contrast;
     -fx-font-weight: bold;
     -fx-padding: 10 0 10 0;
 }
 
 .primary-button:hover {
-    -fx-background-color: linear-gradient(to right, #1d4ed8, #1e40af);
+    -fx-background-color: linear-gradient(to right, derive(-app-primary, -10%), derive(-app-primary, -25%));
 }
 
 .login-root {
-    -fx-background-color: #2B6CB0;
+    -fx-background-color: transparent;
 }
 
 .login-header {
     -fx-font-size: 40px;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: -app-on-surface;
     -fx-font-weight: bold;
     -fx-letter-spacing: 2px;
     -fx-alignment: center;
 }
 
 .login-panel {
-    -fx-background-color: #ffffff;
+    -fx-background-color: -app-surface-alt;
+    -fx-border-color: -app-panel-border;
+    -fx-border-width: 1;
     -fx-background-radius: 28;
     -fx-padding: 32 36 32 36;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 8);
 }
 
 .input-group {
-    -fx-background-color: #f1f5f9;
     -fx-background-radius: 12;
     -fx-padding: 10 14 10 14;
 }
 
 .icon-label {
     -fx-font-size: 18px;
-    -fx-text-fill: #3b82f6;
+    -fx-text-fill: -app-icon-accent;
 }
 
 .input-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-size: 14px;
-    -fx-prompt-text-fill: #94a3b8;
 }
 
 .meta-row CheckBox,
@@ -75,16 +81,14 @@
 }
 
 .login-button {
-    -fx-background-color: linear-gradient(to bottom, #1d4ed8, #1e40af);
     -fx-background-radius: 20;
-    -fx-text-fill: #ffffff;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 12 0 12 0;
 }
 
 .login-button:hover {
-    -fx-background-color: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    -fx-background-color: linear-gradient(to bottom, derive(-app-primary, 5%), derive(-app-primary, -10%));
 }
 
 .error-label {
@@ -95,11 +99,9 @@
 .safety-icon,
 .seatbelt-icon {
     -fx-font-size: 18px;
-    -fx-text-fill: #ffffff;
 }
 
 .safety-text {
-    -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }

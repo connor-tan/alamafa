@@ -13,7 +13,7 @@ building blocks.
   resource resolver abstraction、`FxView` 返回值以及注解 `@FxViewSpec` 元数据注册（含 `primary`、`title` 等窗口元信息），帮助统一视图装载流程。
 - `alamafa-jfx-viewmodel`: MVVM 核心基类，包括 `FxViewModel` 生命周期、注解 `@FxViewModelSpec`、可绑定命令
   (`FxCommand`/`AsyncFxCommand`) 以及 `FxViewModelBinder`、`FxWindowManager` 辅助类。
-  注解可声明 `scope`（`APPLICATION`/`VIEW`）与 `lazy`，由 `FxViewModelRegistry` 管理实例缓存与懒加载。
+  注解可声明 `scope`（`APPLICATION`/`VIEW`，默认 `VIEW`）与 `lazy`，由 `FxViewModelRegistry` 管理实例缓存与懒加载。
 - `alamafa-jfx-starter`: 聚合上述组件与自动配置，应用只需引入此依赖并在 `@AlamafaBootApplication` 上指定
   `launcher = JavaFxApplicationLauncher.class` 即可获得开箱即用的 JavaFX MVVM 支持。
 

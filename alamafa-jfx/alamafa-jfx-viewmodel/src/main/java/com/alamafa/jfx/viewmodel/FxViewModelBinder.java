@@ -125,7 +125,7 @@ public final class FxViewModelBinder {
             return true;
         }
         return viewModelRegistry.scopeOf(viewModelType)
-                .map(scope -> scope == FxViewModelScope.VIEW)
+                .map(scope -> scope != FxViewModelScope.APPLICATION)
                 .orElse(true);
     }
 

@@ -4,6 +4,7 @@ import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.di.BeanRegistry;
 import com.alamafa.di.annotation.Bean;
+import com.alamafa.di.annotation.ConditionalOnClass;
 import com.alamafa.jfx.view.FxViewLoader;
 import com.alamafa.jfx.view.meta.FxViewRegistry;
 import com.alamafa.jfx.viewmodel.FxViewModelBinder;
@@ -13,6 +14,10 @@ import com.alamafa.jfx.viewmodel.meta.FxViewModelRegistry;
 import com.alamafa.jfx.viewmodel.window.FxWindowManager;
 
 @AutoConfiguration
+@ConditionalOnClass({
+        "javafx.application.Application",
+        "javafx.stage.Stage"
+})
 public class FxViewModelAutoConfiguration {
 
     @Bean

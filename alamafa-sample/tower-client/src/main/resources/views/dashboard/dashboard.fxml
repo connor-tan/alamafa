@@ -1,11 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alamafa.tower.client.ui.dashboard.DashboardViewController"
             prefWidth="960" prefHeight="640" styleClass="dashboard-background">
     <top>
-        <StackPane fx:id="headerContainer" BorderPane.alignment="CENTER"/>
+        <VBox spacing="0" BorderPane.alignment="CENTER">
+            <MenuBar>
+                <menus>
+                    <Menu text="监控">
+                        <items>
+                            <MenuItem text="打开监控墙" onAction="#handleOpenMonitoringWall"/>
+                        </items>
+                    </Menu>
+                    <Menu text="主题">
+                        <items>
+                            <MenuItem text="浅色" onAction="#handleApplyLightTheme"/>
+                            <MenuItem text="深色" onAction="#handleApplyDarkTheme"/>
+                        </items>
+                    </Menu>
+                </menus>
+            </MenuBar>
+            <StackPane fx:id="headerContainer"/>
+        </VBox>
     </top>
     <bottom>
         <StackPane fx:id="footerContainer" BorderPane.alignment="CENTER"/>

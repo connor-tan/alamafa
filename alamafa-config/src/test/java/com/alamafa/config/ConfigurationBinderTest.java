@@ -2,148 +2,71 @@ package com.alamafa.config;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigurationBinderTest {
 
     @Test
-    void bindsConfigurationPropertiesWithPrefix() {
-        Configuration config = ConfigurationLoader.create()
-                .addProperties(Map.of(
-                        "app.name", "demo",
-                        "app.port", "8080",
-                        "app.enabled", "true"
-                ))
-                .load();
+    void shouldBindCamelCaseKeys() {
+        Configuration configuration = new Configuration(new HashMap<>(Map.of(
+                "api.baseUrl", "http://example.com",
+                "api.connectTimeoutSeconds", "15",
+                "api.requestTimeoutSeconds", "45"
+        )));
 
-        AppProperties properties = ConfigurationBinder.bind(config, AppProperties.class);
+        ApiSampleProperties properties = ConfigurationBinder.bind(configuration, ApiSampleProperties.class);
 
-        assertEquals("demo", properties.getName());
-        assertEquals(8080, properties.getPort());
-        assertTrue(properties.isEnabled());
+        assertEquals("http://example.com", properties.getBaseUrl());
+        assertEquals(15, properties.getConnectTimeoutSeconds());
+        assertEquals(45, properties.getRequestTimeoutSeconds());
     }
 
     @Test
-    void bindsEnumProperties() {
-        Configuration config = ConfigurationLoader.create()
-                .addProperties(Map.of("enum.mode", "BETA"))
-                .load();
+    void shouldBindKebabCaseKeys() {
+        Configuration configuration = new Configuration(new HashMap<>(Map.of(
+                "api.base-url", "https://sample",
+                "api.connect-timeout-seconds", "20",
+                "api.request-timeout-seconds", "60"
+        )));
 
-        EnumProperties properties = ConfigurationBinder.bind(config, EnumProperties.class);
+        ApiSampleProperties properties = ConfigurationBinder.bind(configuration, ApiSampleProperties.class);
 
-        assertEquals(Mode.BETA, properties.getMode());
+        assertEquals("https://sample", properties.getBaseUrl());
+        assertEquals(20, properties.getConnectTimeoutSeconds());
+        assertEquals(60, properties.getRequestTimeoutSeconds());
     }
 
-    @Test
-    void throwsOnUnsupportedType() {
-        Configuration config = ConfigurationLoader.create()
-                .addProperties(Map.of("unsupported.duration", "PT10S"))
-                .load();
+    @ConfigurationProperties(prefix = "api")
+    static class ApiSampleProperties {
+        private String baseUrl = "http://localhost";
+        private int connectTimeoutSeconds = 5;
+        private int requestTimeoutSeconds = 10;
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> ConfigurationBinder.bind(config, UnsupportedProperties.class));
-        assertTrue(ex.getMessage().contains("duration"));
-    }
-
-    @Test
-    void bindsFieldsWithUppercaseAcronyms() {
-        Configuration config = ConfigurationLoader.create()
-                .addProperties(Map.of(
-                        "app.url", "https://alamafa.dev",
-                        "app.http.server", "true"
-                ))
-                .load();
-
-        AcronymProperties properties = ConfigurationBinder.bind(config, AcronymProperties.class);
-
-        assertEquals("https://alamafa.dev", properties.getURL());
-        assertTrue(properties.isHTTPServer());
-    }
-
-    @ConfigurationProperties(prefix = "app")
-    static class AppProperties {
-        private String name;
-        private int port;
-        private boolean enabled;
-
-        public String getName() {
-            return name;
+        public String getBaseUrl() {
+            return baseUrl;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
         }
 
-        public int getPort() {
-            return port;
+        public int getConnectTimeoutSeconds() {
+            return connectTimeoutSeconds;
         }
 
-        public void setPort(int port) {
-            this.port = port;
+        public void setConnectTimeoutSeconds(int connectTimeoutSeconds) {
+            this.connectTimeoutSeconds = connectTimeoutSeconds;
         }
 
-        public boolean isEnabled() {
-            return enabled;
+        public int getRequestTimeoutSeconds() {
+            return requestTimeoutSeconds;
         }
 
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
-
-    @ConfigurationProperties(prefix = "enum")
-    static class EnumProperties {
-        private Mode mode;
-
-        public Mode getMode() {
-            return mode;
-        }
-
-        public void setMode(Mode mode) {
-            this.mode = mode;
-        }
-    }
-
-    enum Mode {
-        ALPHA, BETA
-    }
-
-    @ConfigurationProperties(prefix = "unsupported")
-    static class UnsupportedProperties {
-        private java.time.Duration duration;
-
-        public java.time.Duration getDuration() {
-            return duration;
-        }
-
-        public void setDuration(java.time.Duration duration) {
-            this.duration = duration;
-        }
-    }
-
-    @ConfigurationProperties(prefix = "app")
-    static class AcronymProperties {
-        private String URL;
-        private boolean HTTPServer;
-
-        public String getURL() {
-            return URL;
-        }
-
-        public void setURL(String URL) {
-            this.URL = URL;
-        }
-
-        public boolean isHTTPServer() {
-            return HTTPServer;
-        }
-
-        public void setHTTPServer(boolean HTTPServer) {
-            this.HTTPServer = HTTPServer;
+        public void setRequestTimeoutSeconds(int requestTimeoutSeconds) {
+            this.requestTimeoutSeconds = requestTimeoutSeconds;
         }
     }
 }

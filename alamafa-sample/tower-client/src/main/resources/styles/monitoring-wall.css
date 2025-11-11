@@ -1,0 +1,22 @@
+.monitoring-grid {
+    -fx-padding: 12;
+    -fx-background-color: #0f1115;
+}
+
+.monitoring-tile {
+    -fx-background-color: #1b1f24;
+    -fx-border-color: #2e3238;
+    -fx-border-width: 1;
+    -fx-border-style: solid;
+    -fx-alignment: center;
+    -fx-min-height: 160px;
+    -fx-min-width: 160px;
+}
+
+.monitoring-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+    -fx-background-color: rgba(0, 0, 0, 0.45);
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 14px;
+    -fx-background-radius: 4;
+}

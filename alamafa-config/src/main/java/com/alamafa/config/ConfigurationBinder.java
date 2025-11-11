@@ -3,8 +3,11 @@ package com.alamafa.config;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 简单的属性绑定器，将 {@link Configuration} 数据映射到 POJO。
@@ -52,8 +55,61 @@ public final class ConfigurationBinder {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            String key = normalizedPrefix + toPropertyName(field.getName());
-            source.get(key).ifPresent(value -> applyValue(target, field, value));
+            findPropertyValue(source, normalizedPrefix, field)
+                    .ifPresent(value -> applyValue(target, field, value));
+        }
+    }
+
+    private static Optional<String> findPropertyValue(Configuration source,
+                                                      String normalizedPrefix,
+                                                      Field field) {
+        for (String candidate : propertyNameCandidates(normalizedPrefix, field.getName())) {
+            Optional<String> value = source.get(candidate);
+            if (value.isPresent()) {
+                return value;
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static List<String> propertyNameCandidates(String normalizedPrefix, String fieldName) {
+        List<String> candidates = new ArrayList<>(6);
+        String dottedPrefix = normalizedPrefix == null ? "" : normalizedPrefix;
+        String plainPrefix = dottedPrefix.endsWith(".") && dottedPrefix.length() > 0
+                ? dottedPrefix.substring(0, dottedPrefix.length() - 1)
+                : dottedPrefix;
+        addCandidate(candidates, dottedPrefix, toPropertyName(fieldName));
+        addCandidate(candidates, dottedPrefix, toKebabCase(fieldName));
+        addCandidate(candidates, dottedPrefix, fieldName);
+        if (!plainPrefix.isEmpty()) {
+            String kebabPrefix = plainPrefix.replace('.', '-');
+            addCandidate(candidates, kebabPrefix.isEmpty() ? "" : kebabPrefix + '-', toKebabCase(fieldName));
+            addCandidate(candidates, kebabPrefix.isEmpty() ? "" : kebabPrefix + '-', fieldName);
+        }
+        // Ensure direct field name without prefix is the last fallback (useful for prefix="")
+        if (dottedPrefix.isEmpty()) {
+            addCandidate(candidates, "", toPropertyName(fieldName));
+            addCandidate(candidates, "", toKebabCase(fieldName));
+            addCandidate(candidates, "", fieldName);
+        }
+        return candidates;
+    }
+
+    private static void addCandidate(List<String> target, String prefix, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        String normalizedPrefix = prefix == null ? "" : prefix;
+        String candidate;
+        if (normalizedPrefix.isEmpty()) {
+            candidate = value;
+        } else if (normalizedPrefix.endsWith(".") || normalizedPrefix.endsWith("-")) {
+            candidate = normalizedPrefix + value;
+        } else {
+            candidate = normalizedPrefix + value;
+        }
+        if (!target.contains(candidate)) {
+            target.add(candidate);
         }
     }
 
@@ -171,5 +227,51 @@ public final class ConfigurationBinder {
             length = builder.length();
         }
         return builder.toString();
+    }
+
+    private static String toKebabCase(String fieldName) {
+        if (fieldName == null || fieldName.isBlank()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        char[] chars = fieldName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char current = chars[i];
+            if (current == '_') {
+                if (!endsWith(builder, '-')) {
+                    builder.append('-');
+                }
+                continue;
+            }
+            if (Character.isUpperCase(current)) {
+                boolean nextIsLower = (i + 1 < chars.length) && Character.isLowerCase(chars[i + 1]);
+                boolean prevIsLowerOrDigit = (i > 0) && (Character.isLowerCase(chars[i - 1]) || Character.isDigit(chars[i - 1]));
+                boolean prevIsUpper = (i > 0) && Character.isUpperCase(chars[i - 1]);
+                if (builder.length() > 0
+                        && !endsWith(builder, '-')
+                        && (prevIsLowerOrDigit || (prevIsUpper && nextIsLower))) {
+                    builder.append('-');
+                }
+                builder.append(Character.toLowerCase(current));
+            } else {
+                if (current == '-') {
+                    if (!endsWith(builder, '-')) {
+                        builder.append('-');
+                    }
+                } else {
+                    builder.append(Character.toLowerCase(current));
+                }
+            }
+        }
+        int length = builder.length();
+        while (length > 0 && builder.charAt(length - 1) == '-') {
+            builder.setLength(length - 1);
+            length = builder.length();
+        }
+        return builder.toString();
+    }
+
+    private static boolean endsWith(StringBuilder builder, char character) {
+        return builder.length() > 0 && builder.charAt(builder.length() - 1) == character;
     }
 }

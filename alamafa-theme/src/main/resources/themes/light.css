@@ -1,0 +1,63 @@
+
+.root {
+    -app-surface: #f4f6fb;
+    -app-surface-alt: rgba(255, 255, 255, 0.96);
+    -app-border: #cdd5df;
+    -app-on-surface: #1f2a37;
+    -app-on-surface-muted: rgba(31, 42, 55, 0.7);
+    -app-input-bg: #ffffff;
+    -app-primary: #3273dc;
+    -app-primary-contrast: #ffffff;
+    -app-login-gradient-top: #dbeafe;
+    -app-login-gradient-bottom: #bfdbfe;
+    -app-icon-accent: #3b82f6;
+    -app-panel-border: rgba(0, 0, 0, 0.08);
+    -app-danger: #dc2626;
+    -app-card-shadow: rgba(0, 0, 0, 0.25);
+    -fx-base: -app-surface;
+    -fx-background: -app-surface;
+    -fx-text-fill: -app-on-surface;
+    -fx-control-inner-background: -app-input-bg;
+}
+
+.label {
+    -fx-text-fill: -app-on-surface;
+}
+
+.text-field,
+.password-field,
+.text-area {
+    -fx-background-color: -app-input-bg;
+    -fx-text-fill: -app-on-surface;
+    -fx-border-color: -app-border;
+    -fx-border-radius: 4;
+    -fx-padding: 6 10;
+}
+
+.button {
+    -fx-background-color: -app-primary;
+    -fx-text-fill: -app-primary-contrast;
+    -fx-background-radius: 4;
+}
+
+.login-panel {
+    -fx-background-color: -app-surface-alt;
+}
+
+.login-title,
+.login-subtitle,
+.safety-text,
+.safety-icon,
+.seatbelt-icon {
+    -fx-text-fill: -app-on-surface;
+}
+
+.icon-label {
+    -fx-text-fill: -app-icon-accent;
+}
+
+.input-group {
+    -fx-background-color: -app-input-bg;
+    -fx-border-color: -app-border;
+    -fx-border-radius: 8;
+}

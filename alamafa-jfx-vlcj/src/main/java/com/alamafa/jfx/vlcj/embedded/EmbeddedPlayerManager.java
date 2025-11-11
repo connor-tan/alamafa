@@ -16,4 +16,10 @@ public class EmbeddedPlayerManager {
         session.initialize();
         return session;
     }
+
+    public EmbeddedPlayerSession attach(StackPane container, int preferredWidth, int preferredHeight) {
+        EmbeddedPlayerSession session = new EmbeddedPlayerSession(container, preferredWidth, preferredHeight);
+        session.initialize();
+        return session;
+    }
 }

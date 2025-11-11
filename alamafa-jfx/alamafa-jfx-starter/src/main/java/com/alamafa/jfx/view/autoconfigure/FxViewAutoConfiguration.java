@@ -3,6 +3,7 @@ package com.alamafa.jfx.view.autoconfigure;
 import com.alamafa.bootstrap.autoconfigure.AutoConfiguration;
 import com.alamafa.core.ApplicationContext;
 import com.alamafa.di.annotation.Bean;
+import com.alamafa.di.annotation.ConditionalOnClass;
 import com.alamafa.jfx.view.FxViewLoader;
 import com.alamafa.jfx.view.ResourceResolver;
 import com.alamafa.jfx.view.meta.FxViewMetadataProcessor;
@@ -12,6 +13,7 @@ import com.alamafa.jfx.view.meta.FxViewRegistry;
  * Registers core beans required for annotation-driven view handling.
  */
 @AutoConfiguration
+@ConditionalOnClass("javafx.fxml.FXMLLoader")
 public class FxViewAutoConfiguration {
 
     @Bean

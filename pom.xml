@@ -18,6 +18,7 @@
         <module>alamafa-sample</module>
         <module>alamafa-jfx</module>
         <module>alamafa-jfx-vlcj</module>
+        <module>alamafa-theme</module>
     </modules>
 
     <properties>

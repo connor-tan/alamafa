@@ -34,6 +34,17 @@ public class TokenStore {
         return current.expiresAt != null && Instant.now().isAfter(current.expiresAt);
     }
 
+    public boolean hasValidToken() {
+        TokenState current = state.get();
+        if (current.accessToken == null) {
+            return false;
+        }
+        if (current.expiresAt == null) {
+            return true;
+        }
+        return Instant.now().isBefore(current.expiresAt);
+    }
+
     public void clear() {
         state.set(TokenState.empty());
     }

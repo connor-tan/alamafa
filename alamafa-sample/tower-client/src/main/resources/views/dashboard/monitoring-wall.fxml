@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.alamafa.tower.client.ui.monitoring.MonitoringWallViewController"
+            prefWidth="1280" prefHeight="800">
+    <center>
+        <GridPane fx:id="wallGrid" BorderPane.alignment="CENTER"
+                  hgap="6" vgap="6" styleClass="monitoring-grid"/>
+    </center>
+</BorderPane>

@@ -56,7 +56,11 @@ public class HttpExecutor {
         if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
             builder.header("Content-Type", "application/json");
         }
-        tokenStore.accessToken().ifPresent(token -> builder.header("Authorization", "Bearer " + token));
+        if (tokenStore.hasValidToken()) {
+            tokenStore.accessToken().ifPresent(token -> builder.header("Authorization", "Bearer " + token));
+        } else if (tokenStore.isExpired()) {
+            tokenStore.clear();
+        }
         builder.method(method.toUpperCase(), bodyPublisher);
         return builder.build();
     }

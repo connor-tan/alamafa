@@ -12,6 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -26,13 +29,15 @@ class LoginViewModelTest {
     @BeforeEach
     void setUp() {
         tokenStore = new TokenStore();
-        preferences = Preferences.userRoot().node("tower-client-test-" + System.nanoTime());
+        preferences = new InMemoryPreferences();
         credentialsStore = new CredentialsStore(preferences);
     }
 
     @AfterEach
     void tearDown() throws BackingStoreException {
-        preferences.removeNode();
+        if (preferences != null) {
+            preferences.clear();
+        }
     }
 
     @Test
@@ -118,5 +123,75 @@ class LoginViewModelTest {
                 throw exception;
             }
         };
+    }
+
+    private static final class InMemoryPreferences extends AbstractPreferences {
+        private final Map<String, String> values = new HashMap<>();
+        private final Map<String, InMemoryPreferences> children = new HashMap<>();
+
+        InMemoryPreferences() {
+            this(null, "");
+        }
+
+        private InMemoryPreferences(AbstractPreferences parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        protected void putSpi(String key, String value) {
+            values.put(key, value);
+        }
+
+        @Override
+        protected String getSpi(String key) {
+            return values.get(key);
+        }
+
+        @Override
+        protected void removeSpi(String key) {
+            values.remove(key);
+        }
+
+        @Override
+        protected void removeNodeSpi() {
+            values.clear();
+            children.values().forEach(child -> {
+                try {
+                    child.removeNode();
+                } catch (BackingStoreException ignored) {
+                }
+            });
+            children.clear();
+        }
+
+        @Override
+        protected String[] keysSpi() {
+            return values.keySet().toArray(String[]::new);
+        }
+
+        @Override
+        protected String[] childrenNamesSpi() {
+            return children.keySet().toArray(String[]::new);
+        }
+
+        @Override
+        protected AbstractPreferences childSpi(String name) {
+            return children.computeIfAbsent(name, key -> new InMemoryPreferences(this, key));
+        }
+
+        @Override
+        protected void syncSpi() {
+            // no-op
+        }
+
+        @Override
+        protected void flushSpi() {
+            // no-op
+        }
+
+        @Override
+        public boolean isUserNode() {
+            return true;
+        }
     }
 }

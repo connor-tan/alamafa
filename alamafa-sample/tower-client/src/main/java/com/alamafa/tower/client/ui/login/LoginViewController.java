@@ -2,8 +2,10 @@ package com.alamafa.tower.client.ui.login;
 
 import com.alamafa.di.annotation.Inject;
 import com.alamafa.jfx.view.annotation.FxViewSpec;
+import com.alamafa.jfx.view.annotation.PreClose;
 import com.alamafa.jfx.viewmodel.window.FxWindowManager;
 import com.alamafa.jfx.viewmodel.window.FxWindowOptions;
+import com.alamafa.theme.ThemeManager;
 import com.alamafa.tower.client.session.UserSession;
 import com.alamafa.tower.client.ui.dashboard.DashboardViewController;
 import com.alamafa.tower.client.ui.login.LoginViewModel.LoginResult;
@@ -58,6 +60,9 @@ public class LoginViewController {
     @Inject
     private UserSession userSession;
 
+    @Inject
+    private ThemeManager themeManager;
+
     @FXML
     private void initialize() {
         errorLabel.setText("");
@@ -70,6 +75,13 @@ public class LoginViewController {
         if (usernameField != null) {
             usernameField.setOnAction(event -> handleLogin());
         }
+        if (loginButton != null) {
+            loginButton.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null && themeManager != null) {
+                    themeManager.applyCurrentTheme(newScene);
+                }
+            });
+        }
     }
 
     public void setViewModel(LoginViewModel viewModel) {
@@ -78,24 +90,32 @@ public class LoginViewController {
             usernameField.textProperty().bindBidirectional(viewModel.usernameProperty());
             passwordField.textProperty().bindBidirectional(viewModel.passwordProperty());
             rememberMeCheckBox.selectedProperty().bindBidirectional(viewModel.rememberMeProperty());
+            loginButton.disableProperty().bind(viewModel.authenticatingProperty());
+            forgotPasswordLink.disableProperty().bind(viewModel.authenticatingProperty());
         }
     }
 
     @FXML
     private void handleLogin() {
-        LoginResult result = viewModel.authenticate(
+        if (viewModel == null) {
+            return;
+        }
+        errorLabel.setText("正在登录...");
+        viewModel.authenticateAsync(
                 usernameField.getText(),
                 passwordField.getText(),
-                rememberMeCheckBox.isSelected()
+                rememberMeCheckBox.isSelected(),
+                this::handleLoginResult
         );
+    }
+
+    private void handleLoginResult(LoginResult result) {
         if (!result.success()) {
             errorLabel.setText(result.message());
             return;
         }
-
         errorLabel.setText("");
         userSession.updateUsername(result.displayName());
-
         FxWindowOptions options = FxWindowOptions.builder()
                 .title("Tower Client 控制台")
                 .width(960.0)
@@ -103,7 +123,6 @@ public class LoginViewController {
                 .resizable(true)
                 .build();
         windowManager.openWindow(DashboardViewController.class, options);
-
         Stage stage = stage();
         if (stage != null) {
             stage.close();
@@ -129,5 +148,21 @@ public class LoginViewController {
             return newText.length() <= maxLength ? change : null;
         });
         control.setTextFormatter(formatter);
+    }
+
+    @PreClose
+    private void cleanupBindings() {
+        if (viewModel == null) {
+            return;
+        }
+        if (usernameField != null) {
+            usernameField.textProperty().unbindBidirectional(viewModel.usernameProperty());
+        }
+        if (passwordField != null) {
+            passwordField.textProperty().unbindBidirectional(viewModel.passwordProperty());
+        }
+        if (rememberMeCheckBox != null) {
+            rememberMeCheckBox.selectedProperty().unbindBidirectional(viewModel.rememberMeProperty());
+        }
     }
 }

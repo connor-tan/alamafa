@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.awt.GraphicsEnvironment;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -139,6 +140,11 @@ class FxWindowManagerTest {
         }
 
         static void initToolkit() throws Exception {
+            boolean fxTestsEnabled = Boolean.parseBoolean(System.getProperty("enable.fx.tests", "false"));
+            Assumptions.assumeTrue(fxTestsEnabled, "FX integration tests disabled (set -Denable.fx.tests=true to enable)");
+            if (GraphicsEnvironment.isHeadless()) {
+                Assumptions.assumeTrue(false, "JavaFX toolkit unavailable in headless environment");
+            }
             if (toolkitStarted) {
                 return;
             }

@@ -8,6 +8,7 @@ import com.alamafa.jfx.viewmodel.FxViewModel;
 import com.alamafa.jfx.viewmodel.annotation.FxViewModelScope;
 import com.alamafa.jfx.viewmodel.annotation.FxViewModelSpec;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public final class FxViewModelRegistry {
         Objects.requireNonNull(context, "context");
         Objects.requireNonNull(type, "type");
         FxViewModelDescriptor descriptor = find(type).orElse(null);
-        FxViewModelScope scope = descriptor != null ? descriptor.scope() : FxViewModelScope.APPLICATION;
+        FxViewModelScope scope = descriptor != null ? descriptor.scope() : FxViewModelScope.VIEW;
         if (scope == FxViewModelScope.APPLICATION) {
             return type.cast(applicationCache.computeIfAbsent(type, key -> instantiate(context, beanRegistry, type)));
         }
@@ -72,7 +73,9 @@ public final class FxViewModelRegistry {
             return fromContext;
         }
         try {
-            return type.getDeclaredConstructor().newInstance();
+            Constructor<T> constructor = type.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
         } catch (ReflectiveOperationException ex) {
             throw new IllegalStateException("Failed to instantiate view model " + type.getName(), ex);
         }

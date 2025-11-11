@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 将外部进程句柄与命令信道组合为可控终端。
@@ -33,6 +34,7 @@ public final class ExternalProcessEndpoint implements MediaEndpoint {
     private volatile Instant lastHeartbeat;
     private final ExternalProcessRegistry processRegistry;
     private MediaEventListener listener;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public ExternalProcessEndpoint(ExternalPlayerHandle handle,
                                   MediaCommandChannel commandChannel,
@@ -53,6 +55,7 @@ public final class ExternalProcessEndpoint implements MediaEndpoint {
         });
         this.lastHeartbeat = Instant.now();
         scheduler.scheduleAtFixedRate(this::checkHeartbeat, heartbeatTimeout.toSeconds(), heartbeatTimeout.toSeconds(), java.util.concurrent.TimeUnit.SECONDS);
+        handle.onExit(this::closeQuietly);
     }
 
     @Override
@@ -152,15 +155,28 @@ public final class ExternalProcessEndpoint implements MediaEndpoint {
 
     @Override
     public void close() {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         try {
             commandChannel.close();
-            if (eventChannel != null) {
-                eventChannel.close();
-            }
-            scheduler.shutdownNow();
         } finally {
-            processRegistry.unregister(handle);
-            handle.close();
+            try {
+                if (eventChannel != null) {
+                    eventChannel.close();
+                }
+            } finally {
+                scheduler.shutdownNow();
+                processRegistry.unregister(handle);
+                handle.close();
+            }
+        }
+    }
+
+    private void closeQuietly() {
+        try {
+            close();
+        } catch (Exception ignored) {
         }
     }
 }

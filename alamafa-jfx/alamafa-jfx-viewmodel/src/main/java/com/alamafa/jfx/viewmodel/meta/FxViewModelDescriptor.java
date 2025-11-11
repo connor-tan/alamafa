@@ -13,6 +13,6 @@ public record FxViewModelDescriptor(Class<?> type, String name, boolean lazy, Fx
         if (name != null) {
             name = name.trim();
         }
-        scope = scope == null ? FxViewModelScope.APPLICATION : scope;
+        scope = scope == null ? FxViewModelScope.VIEW : scope;
     }
 }

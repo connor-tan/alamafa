@@ -9,9 +9,16 @@ import com.alamafa.tower.client.ui.dashboard.footer.FooterViewController;
 import com.alamafa.tower.client.ui.dashboard.header.HeaderViewController;
 import com.alamafa.tower.client.ui.dashboard.left.LeftPanelViewController;
 import com.alamafa.tower.client.ui.dashboard.right.RightPanelViewController;
+import com.alamafa.tower.client.ui.monitoring.MonitoringWallViewController;
+import com.alamafa.jfx.viewmodel.window.FxWindowHandle;
+import com.alamafa.jfx.viewmodel.window.FxWindowManager;
+import com.alamafa.jfx.viewmodel.window.FxWindowOptions;
+import com.alamafa.theme.Theme;
+import com.alamafa.theme.ThemeManager;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.Scene;
 
 @FxViewSpec(
         fxml = "views/dashboard/dashboard.fxml",
@@ -42,8 +49,15 @@ public class DashboardViewController {
     @Inject
     private FxViewLoader viewLoader;
 
+    @Inject
+    private FxWindowManager windowManager;
+
+    @Inject
+    private ThemeManager themeManager;
+
     private DashboardViewModel viewModel;
     private boolean sectionsLoaded = false;
+    private FxWindowHandle monitoringWallHandle;
 
     public void setViewModel(DashboardViewModel viewModel) {
         this.viewModel = viewModel;
@@ -53,6 +67,11 @@ public class DashboardViewController {
     @FXML
     private void initialize() {
         initializeSections();
+        headerContainer.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && themeManager != null) {
+                themeManager.applyCurrentTheme(newScene);
+            }
+        });
     }
 
     private void initializeSections() {
@@ -77,5 +96,51 @@ public class DashboardViewController {
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to load section " + viewType.getSimpleName(), ex);
         }
+    }
+
+    @FXML
+    private void handleOpenMonitoringWall() {
+        if (windowManager == null) {
+            return;
+        }
+        if (monitoringWallHandle != null && monitoringWallHandle.stage() != null
+                && monitoringWallHandle.stage().isShowing()) {
+            monitoringWallHandle.stage().toFront();
+            monitoringWallHandle.stage().requestFocus();
+            return;
+        }
+        FxWindowOptions options = FxWindowOptions.builder()
+                .title("监控墙")
+                .width(1280.0)
+                .height(800.0)
+                .resizable(true)
+                .build();
+        monitoringWallHandle = windowManager.openWindow(MonitoringWallViewController.class, options);
+        if (monitoringWallHandle != null && monitoringWallHandle.stage() != null) {
+            monitoringWallHandle.stage().setOnHidden(event -> monitoringWallHandle = null);
+        }
+    }
+
+    @FXML
+    private void handleApplyLightTheme() {
+        applyTheme(Theme.LIGHT);
+    }
+
+    @FXML
+    private void handleApplyDarkTheme() {
+        applyTheme(Theme.DARK);
+    }
+
+    private void applyTheme(Theme theme) {
+        if (themeManager == null) {
+            return;
+        }
+        Scene scene = headerContainer.getScene();
+        if (scene != null) {
+            themeManager.apply(theme, scene);
+        } else {
+            themeManager.applyToContextScene(theme);
+        }
+        themeManager.applyToKnownScenes(theme);
     }
 }

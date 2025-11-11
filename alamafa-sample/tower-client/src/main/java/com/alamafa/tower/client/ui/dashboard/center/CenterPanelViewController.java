@@ -2,6 +2,7 @@ package com.alamafa.tower.client.ui.dashboard.center;
 
 import com.alamafa.di.annotation.Inject;
 import com.alamafa.jfx.view.annotation.FxViewSpec;
+import com.alamafa.jfx.view.annotation.PreClose;
 import com.alamafa.jfx.vlcj.core.MediaEndpoint;
 import com.alamafa.jfx.vlcj.core.MediaEndpointFactory;
 import com.alamafa.jfx.vlcj.core.MediaEventDispatcher;
@@ -19,6 +20,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 @FxViewSpec(
@@ -55,6 +58,8 @@ public class CenterPanelViewController {
     private MediaEventListener globalListener;
     private EmbeddedPlayerSession embeddedSession;
     private boolean embeddedMode;
+    private Instant lastHeartbeatStatus = Instant.EPOCH;
+    private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(1);
 
     @FXML
     private void initialize() {
@@ -142,7 +147,16 @@ public class CenterPanelViewController {
             case PLAYING -> updateStatus("播放中 - PID " + activeEndpoint.pid());
             case PAUSED -> updateStatus("已暂停 - PID " + activeEndpoint.pid());
             case STOPPED -> updateStatus("已停止 - PID " + activeEndpoint.pid());
-            case HEARTBEAT -> updateStatus("连接心跳 " + event.timestamp());
+            case HEARTBEAT -> {
+                Instant now = event.timestamp();
+                if (now == null) {
+                    now = Instant.now();
+                }
+                if (Duration.between(lastHeartbeatStatus, now).compareTo(HEARTBEAT_INTERVAL) >= 0) {
+                    lastHeartbeatStatus = now;
+                    updateStatus("连接心跳 " + now);
+                }
+            }
             case ERROR -> {
                 String message = String.valueOf(event.payload().getOrDefault("message", "未知"));
                 updateStatus("播放错误: " + message);
@@ -192,6 +206,16 @@ public class CenterPanelViewController {
             Platform.runLater(() -> statusLabel.setText("通道 " + event.playerId() + " 状态: " + event.type()));
         };
         mediaEventDispatcher.addListener(globalListener);
+    }
+
+    @PreClose
+    private void cleanup() {
+        if (mediaEventDispatcher != null && globalListener != null) {
+            mediaEventDispatcher.removeListener(globalListener);
+            globalListener = null;
+        }
+        disposeActiveHandle();
+        disposeEmbeddedPlayer();
     }
 
 }

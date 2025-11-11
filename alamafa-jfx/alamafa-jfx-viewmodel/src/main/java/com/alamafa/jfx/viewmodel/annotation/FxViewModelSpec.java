@@ -31,5 +31,5 @@ public @interface FxViewModelSpec {
     /**
      * Defines the scope in which the view-model instance should live.
      */
-    FxViewModelScope scope() default FxViewModelScope.APPLICATION;
+    FxViewModelScope scope() default FxViewModelScope.VIEW;
 }
